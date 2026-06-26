@@ -3313,104 +3313,59 @@ html[dir="rtl"] .evidence-provenance-strip span {
 
 .radiologist-case-context-bar {
   position: sticky;
-  top: .75rem;
+  top: .4rem;
   z-index: 8;
-  display: grid;
-  grid-template-columns: minmax(16rem, 1.15fr) minmax(17rem, .95fr) minmax(18rem, 1.25fr);
-  gap: .85rem;
-  align-items: stretch;
-  margin-block: .9rem 1.05rem;
-  padding: .9rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .6rem;
+  margin-block: .55rem .75rem;
+  padding: .4rem .7rem;
   border: 1px solid rgba(174, 207, 202, .95);
-  border-radius: 1.15rem;
-  background: rgba(250, 254, 253, .94);
-  box-shadow: 0 18px 55px rgba(18, 58, 53, .12);
-  backdrop-filter: blur(16px);
+  border-radius: .75rem;
+  background: rgba(250, 254, 253, .96);
+  box-shadow: 0 6px 20px rgba(18, 58, 53, .1);
+  backdrop-filter: blur(12px);
 }
 
-.case-context-primary,
-.case-context-switcher,
-.case-context-facts {
+.rccb-label {
+  color: var(--muted);
+  font-size: .66rem;
+  font-weight: 780;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+.rccb-select {
+  flex: 1 1 14rem;
   min-inline-size: 0;
+  max-inline-size: 30rem;
+  min-block-size: 2rem;
+  padding: .3rem .6rem;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .95);
+  border: 1px solid rgba(200, 222, 218, .95);
+  border-radius: .55rem;
+  font: inherit;
+  font-size: .82rem;
 }
 
-.case-context-primary {
-  display: grid;
-  align-content: center;
-  gap: .22rem;
-  padding: .65rem .75rem;
-  border-radius: .9rem;
-  background: linear-gradient(135deg, rgba(231, 248, 245, .72), rgba(255,255,255,.74));
-}
-
-.case-context-primary p,
-.case-context-primary span,
-.case-context-facts span,
-.case-context-switcher label {
+.rccb-sub {
   color: var(--muted);
   font-size: .72rem;
-  line-height: 1.45;
-}
-
-.case-context-primary h2 {
-  margin: 0;
-  color: var(--ink);
-  font-size: 1.15rem;
-  line-height: 1.15;
-}
-
-.case-context-switcher {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: .55rem;
-}
-
-.case-context-switcher label {
-  display: grid;
-  gap: .28rem;
-  font-weight: 780;
-}
-
-.case-context-switcher input,
-.case-context-switcher select {
-  inline-size: 100%;
-  min-inline-size: 0;
-  min-block-size: 2.25rem;
-  padding: .45rem .7rem;
-  color: var(--ink);
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(200, 222, 218, .95);
-  border-radius: .7rem;
-  font: inherit;
-}
-
-.case-context-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .55rem;
-}
-
-.case-context-facts > div {
-  display: grid;
-  gap: .2rem;
-  min-inline-size: 0;
-  padding: .55rem .65rem;
-  border: 1px solid rgba(215, 231, 228, .92);
-  border-radius: .8rem;
-  background: rgba(255,255,255,.84);
-}
-
-.case-context-facts strong {
-  min-inline-size: 0;
-  color: var(--ink);
-  font-size: .8rem;
-  line-height: 1.35;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-inline-size: 0;
 }
 
-.case-context-facts .chip {
-  justify-self: start;
+.rccb-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin-inline-start: auto;
 }
 
 .demo-workspace-heading,
@@ -3616,11 +3571,6 @@ html[dir="rtl"] .demo-case-id {
 @media (max-width: 760px) {
   .radiologist-case-context-bar {
     position: static;
-    grid-template-columns: 1fr;
-  }
-
-  .case-context-facts {
-    grid-template-columns: 1fr;
   }
 
   .demo-workspace-heading,

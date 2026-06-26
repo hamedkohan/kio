@@ -527,67 +527,23 @@ function RadiologistCaseContextBar({
   onSelectCase: (caseId: string) => void;
 }) {
   const { t, tv, formatNumber } = useI18n();
-  const [search, setSearch] = useState("");
-  const normalizedSearch = search.trim().toLowerCase();
-  const filteredSummaries = normalizedSearch
-    ? summaries.filter((summary) => {
-      const haystack = [
-        summary.caseRecord.case_id,
-        summary.caseRecord.accession_number,
-        summary.patient.name,
-        summary.patient.name_fa,
-        summary.patient.source_patient_id,
-        summary.caseRecord.primary_module,
-        summary.caseRecord.protocol,
-        ...summary.reports.map((report) => `${report.report_type} ${report.title} ${report.module}`),
-        ...summary.modules.map((module) => `${module.module_id} ${module.display_name}`),
-      ].join(" ").toLowerCase();
-      return haystack.includes(normalizedSearch);
-    })
-    : summaries;
-  const moduleLabels = detail.modules.map((module) => tv(module.display_name));
   return (
     <section className="radiologist-case-context-bar" aria-label={t("Active imported case context")}>
-      <div className="case-context-primary">
-        <p>{t("Active imported case")}</p>
-        <h2>{displayDemoPatientName(detail)}</h2>
-        <span>
-          <span dir="ltr">{detail.patient.source_patient_id}</span>
-          {" · "}
-          {formatNumber(detail.patient.age_at_study)} {t("years")}
-          {" · "}
-          {tv(demoSexLabel(detail.patient.sex))}
-          {" · "}
-          {detail.caseRecord.study_date}
-        </span>
-      </div>
-      <div className="case-context-switcher">
-        <label>
-          {t("Search imported cases")}
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={t("Patient, ID, case, or module")}
-          />
-        </label>
-        <label>
-          {t("Active case")}
-          <select value={selectedCaseId} onChange={(event) => onSelectCase(event.target.value)}>
-            {filteredSummaries.map((summary) => (
-              <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
-                {displayDemoPatientName(summary)} · {summary.caseRecord.case_id} · {summary.caseRecord.primary_module}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="case-context-facts">
-        <div><span>{t("Case ID")}</span><strong dir="ltr">{detail.caseRecord.case_id}</strong></div>
-        <div><span>{t("Report modules")}</span><strong>{moduleLabels.length ? moduleLabels.join(" · ") : t("Not recorded")}</strong></div>
-        <div><span>{t("AI status")}</span><StatusChip label={detail.caseRecord.ai_processing_status} /></div>
-        <div><span>{t("QC status")}</span><StatusChip label={detail.caseRecord.qc_state} /></div>
-        <div><span>{t("Outliers")}</span><StatusChip label={`${formatNumber(detail.outlierCount)} ${t("outliers")}`} tone={detail.outlierCount ? "attention" : "good"} /></div>
+      <span className="rccb-label">{t("Active imported case")}</span>
+      <select className="rccb-select" aria-label={t("Active case")} value={selectedCaseId} onChange={(event) => onSelectCase(event.target.value)}>
+        {summaries.map((summary) => (
+          <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
+            {displayDemoPatientName(summary)} · {summary.caseRecord.case_id} · {summary.caseRecord.primary_module}
+          </option>
+        ))}
+      </select>
+      <span className="rccb-sub" dir="ltr">
+        {detail.patient.source_patient_id} · {formatNumber(detail.patient.age_at_study)}{t("y")} · {tv(demoSexLabel(detail.patient.sex))} · {detail.caseRecord.study_date}
+      </span>
+      <div className="rccb-chips">
+        <StatusChip label={detail.caseRecord.ai_processing_status} />
+        <StatusChip label={detail.caseRecord.qc_state} />
+        <StatusChip label={`${formatNumber(detail.outlierCount)} ${t("outliers")}`} tone={detail.outlierCount ? "attention" : "good"} />
       </div>
     </section>
   );

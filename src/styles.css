@@ -724,6 +724,8 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .ai-boundary, .safe-note { padding: 0.8rem; background: #f3f6f5; border-inline-start: 3px solid var(--accent); border-radius: .45rem; }
 .ai-boundary strong, .safe-note strong { font-size: .73rem; }
 .ai-boundary p, .safe-note p { margin: .3rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.5; }
+.ai-boundary ul { margin: .4rem 0 0; padding-inline-start: 1.1rem; color: var(--muted); font-size: .72rem; line-height: 1.6; }
+.report-draft-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--kio-font-sans); font-size: .78rem; line-height: 1.65; color: var(--text); }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

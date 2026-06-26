@@ -324,7 +324,7 @@ function ResearchDemoWorkspace({ title }: { title?: string }) {
   );
 }
 
-function VisualScoresPanel({ scores, compact = false }: { scores: DemoVisualScore[]; compact?: boolean }) {
+export function VisualScoresPanel({ scores, compact = false }: { scores: DemoVisualScore[]; compact?: boolean }) {
   const { t, tv, formatNumber } = useI18n();
   if (!scores.length) return <PanelCard title="Structured visual scores" subtitle="No visual scoring module in this case"><EmptyState title="No visual score rows" message="This case does not contain a structured visual MRI report." /></PanelCard>;
   return (
@@ -344,7 +344,7 @@ function VisualScoresPanel({ scores, compact = false }: { scores: DemoVisualScor
   );
 }
 
-function QuantitativeMetricsPanel({ metrics, title, includePrevious = false, showProgressiveDisclosure = false }: { metrics: DemoQuantitativeMetric[]; title: string; includePrevious?: boolean; showProgressiveDisclosure?: boolean }) {
+export function QuantitativeMetricsPanel({ metrics, title, includePrevious = false, showProgressiveDisclosure = false }: { metrics: DemoQuantitativeMetric[]; title: string; includePrevious?: boolean; showProgressiveDisclosure?: boolean }) {
   const { t, tv, formatNumber } = useI18n();
   const rows = showProgressiveDisclosure ? metrics.slice(0, 10) : metrics;
   if (!metrics.length) return <PanelCard title={title} subtitle="No structured quantitative output for this case"><EmptyState title="No quantitative rows" message="This case is visual-report only or AI output is pending." /></PanelCard>;
@@ -384,7 +384,7 @@ function QuantitativeMetricsPanel({ metrics, title, includePrevious = false, sho
   );
 }
 
-function LongitudinalPanel({ metrics }: { metrics: DemoQuantitativeMetric[] }) {
+export function LongitudinalPanel({ metrics }: { metrics: DemoQuantitativeMetric[] }) {
   const { t } = useI18n();
   return (
     <PanelCard title="Longitudinal change" subtitle="Current vs previous value and change percentage">
@@ -403,7 +403,7 @@ function LongitudinalPanel({ metrics }: { metrics: DemoQuantitativeMetric[] }) {
   );
 }
 
-function SourceReferencePanel({ reports, assets }: { reports: DemoReport[]; assets: DemoCaseDetail["sourceAssets"] }) {
+export function SourceReferencePanel({ reports, assets }: { reports: DemoReport[]; assets: DemoCaseDetail["sourceAssets"] }) {
   const { t, tv } = useI18n();
   return (
     <PanelCard title="Legacy source reference" subtitle="Reference thumbnails only; structured data is the platform source of truth.">

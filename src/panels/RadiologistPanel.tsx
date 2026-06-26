@@ -533,18 +533,11 @@ function RadiologistCaseContextBar({
       <select className="rccb-select" aria-label={t("Active case")} value={selectedCaseId} onChange={(event) => onSelectCase(event.target.value)}>
         {summaries.map((summary) => (
           <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
-            {displayDemoPatientName(summary)} · {summary.caseRecord.case_id} · {summary.caseRecord.primary_module}
+            {displayDemoPatientName(summary)} · {summary.caseRecord.case_id}
           </option>
         ))}
       </select>
-      <span className="rccb-sub" dir="ltr">
-        {detail.patient.source_patient_id} · {formatNumber(detail.patient.age_at_study)}{t("y")} · {tv(demoSexLabel(detail.patient.sex))} · {detail.caseRecord.study_date}
-      </span>
-      <div className="rccb-chips">
-        <StatusChip label={detail.caseRecord.ai_processing_status} />
-        <StatusChip label={detail.caseRecord.qc_state} />
-        <StatusChip label={`${formatNumber(detail.outlierCount)} ${t("outliers")}`} tone={detail.outlierCount ? "attention" : "good"} />
-      </div>
+      <StatusChip label={`${formatNumber(detail.outlierCount)} ${t("outliers")}`} tone={detail.outlierCount ? "attention" : "good"} />
     </section>
   );
 }

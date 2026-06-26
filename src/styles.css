@@ -3313,19 +3313,19 @@ html[dir="rtl"] .evidence-provenance-strip span {
 
 .radiologist-case-context-bar {
   position: sticky;
-  top: .4rem;
-  z-index: 8;
+  top: 4rem;
+  z-index: 9;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: .5rem .6rem;
-  margin-block: .55rem .75rem;
-  padding: .4rem .7rem;
-  border: 1px solid rgba(174, 207, 202, .95);
-  border-radius: .75rem;
-  background: rgba(250, 254, 253, .96);
-  box-shadow: 0 6px 20px rgba(18, 58, 53, .1);
-  backdrop-filter: blur(12px);
+  gap: .5rem .7rem;
+  margin-block: .25rem 1rem;
+  padding: .5rem .85rem;
+  border: 1px solid var(--accent);
+  border-inline-start: 4px solid var(--accent);
+  border-radius: .7rem;
+  background: var(--accent-soft);
+  box-shadow: 0 10px 26px rgba(18, 58, 53, .16);
 }
 
 .rccb-label {
@@ -3340,15 +3340,16 @@ html[dir="rtl"] .evidence-provenance-strip span {
 .rccb-select {
   flex: 1 1 14rem;
   min-inline-size: 0;
-  max-inline-size: 30rem;
-  min-block-size: 2rem;
-  padding: .3rem .6rem;
+  max-inline-size: 32rem;
+  min-block-size: 2.1rem;
+  padding: .35rem .65rem;
   color: var(--ink);
-  background: rgba(255, 255, 255, .95);
-  border: 1px solid rgba(200, 222, 218, .95);
+  background: #fff;
+  border: 1px solid var(--accent);
   border-radius: .55rem;
   font: inherit;
-  font-size: .82rem;
+  font-size: .85rem;
+  font-weight: 700;
 }
 
 .rccb-sub {

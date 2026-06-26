@@ -1,12 +1,22 @@
-name: Deploy to ArvanCloud
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,14 +33,21 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload to ArvanCloud Object Storage
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ARVAN_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ARVAN_SECRET_KEY }}
-          AWS_REGION: ir-thr-at1
-          AWS_EC2_METADATA_DISABLED: "true"
-        run: |
-          aws s3 sync ./dist "s3://kio-preview" \
-            --endpoint-url "https://s3.ir-thr-at1.arvanstorage.ir" \
-            --acl public-read \
-            --delete
+      - name: SPA fallback (404 -> index)
+        run: cp dist/index.html dist/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

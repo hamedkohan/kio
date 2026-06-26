@@ -669,8 +669,13 @@ function getInitialRoute(): RouteState {
   return route;
 }
 
+function stripBase(pathname: string): string {
+  const base = import.meta.env.BASE_URL; // "/" in dev, "/kio/" on GitHub Pages
+  return pathname.startsWith(base) ? pathname.slice(base.length) : pathname.replace(/^\//, "");
+}
+
 function parseRoute(): RouteState {
-  const segments = window.location.pathname.split("/").filter(Boolean);
+  const segments = stripBase(window.location.pathname).split("/").filter(Boolean);
   const storedLocale = getStoredLocale();
   const firstSegment = segments[0];
   const firstIsRole = firstSegment && firstSegment in slugToRole;
@@ -681,7 +686,8 @@ function parseRoute(): RouteState {
 }
 
 function normalizeRoute(locale: Locale, role: RoleId | null, replace: boolean) {
-  const target = `/${locale}${role ? `/${roleToSlug[role]}` : ""}`;
+  const base = import.meta.env.BASE_URL; // ends with "/"
+  const target = `${base}${locale}${role ? `/${roleToSlug[role]}` : ""}`;
   if (window.location.pathname === target) return;
   const method = replace ? "replaceState" : "pushState";
   window.history[method]({}, "", target);

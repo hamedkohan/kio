@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "../i18n";
 import { EmptyState, MetricCard, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip } from "../components/ui";
-import { LongitudinalPanel, QuantitativeMetricsPanel, SourceReferencePanel, VisualScoresPanel } from "../components/DemoReportWorkspace";
+import { LongitudinalPanel, QuantitativeMetricsPanel, VisualScoresPanel } from "../components/DemoReportWorkspace";
 import { getDemoCaseDetail, getDemoCaseSummaries, getKeyMetrics, isOutlierMetric, sortMetricsForReview } from "../data/kio-demo/repository";
 import type { DemoCaseDetail, DemoCaseSummary, DemoQuantitativeMetric } from "../data/kio-demo/types";
 import type { RadiologistCaseReviewView } from "../domain";
@@ -351,22 +351,15 @@ function OutlierPanel({ detail, includePrevious = false }: { detail: DemoCaseDet
 }
 
 function ImageAnnotationTab({ detail }: { detail: DemoCaseDetail }) {
-  const { t, formatNumber } = useI18n();
-  if (!detail.sourceAssets.length) {
-    return <EmptyState title={t("No source renders")} message={t("This selected case has no source page renders attached.")} />;
-  }
+  const { t } = useI18n();
   return (
-    <>
-      <PanelCard title="Image / annotation context" subtitle="No diagnostic image viewer exists in this prototype">
-        <div className="status-list">
-          <div><span>{t("Case ID")}</span><strong dir="ltr">{detail.caseRecord.case_id}</strong></div>
-          <div><span>{t("Modality")}</span><strong>{detail.caseRecord.modality}</strong></div>
-          <div><span>{t("Source references")}</span><strong>{formatNumber(detail.sourceAssets.length)} {t("page render(s)")}</strong></div>
-        </div>
-        <p className="context-copy">{t("Source page renders below are reference material only and are not diagnostic images.")}</p>
-      </PanelCard>
-      <SourceReferencePanel reports={detail.reports} assets={detail.sourceAssets} />
-    </>
+    <PanelCard title="Image / annotation context" subtitle="No diagnostic image viewer exists in this prototype">
+      <div className="status-list">
+        <div><span>{t("Case ID")}</span><strong dir="ltr">{detail.caseRecord.case_id}</strong></div>
+        <div><span>{t("Modality")}</span><strong>{detail.caseRecord.modality}</strong></div>
+      </div>
+      <p className="context-copy">{t("Imaging will be available through the platform viewer / API. Structured data is the source of truth.")}</p>
+    </PanelCard>
   );
 }
 
@@ -476,12 +469,10 @@ function AiQaTab({ detail }: { detail: DemoCaseDetail }) {
         </div>
         <ReportReadinessChecklist title="Technical checks" items={[
           { label: t("AI processing"), status: detail.caseRecord.ai_processing_status, detail: t("Pipeline status from imported data") },
-          { label: t("Source references"), status: `${formatNumber(detail.sourceAssets.length)}`, detail: t("Page renders are reference thumbnails only") },
           { label: t("Available modules"), status: `${formatNumber(detail.reports.length)}`, detail: detail.reports.map((report) => String(report.report_type)).join(" · ") },
         ]} />
       </PanelCard>
       <OutlierPanel detail={detail} includePrevious={detail.longitudinal} />
-      <SourceReferencePanel reports={detail.reports} assets={detail.sourceAssets} />
     </>
   );
 }

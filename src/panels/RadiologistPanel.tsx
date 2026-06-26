@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useI18n } from "../i18n";
 import { EmptyState, MetricCard, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip } from "../components/ui";
 import { LongitudinalPanel, QuantitativeMetricsPanel, VisualScoresPanel } from "../components/DemoReportWorkspace";
+import { CentileCurvesSection } from "../components/CentileCurves";
 import { getDemoCaseDetail, getDemoCaseSummaries, getKeyMetrics, isOutlierMetric, sortMetricsForReview } from "../data/kio-demo/repository";
 import type { DemoCaseDetail, DemoCaseSummary, DemoQuantitativeMetric } from "../data/kio-demo/types";
 import type { RadiologistCaseReviewView } from "../domain";
@@ -256,6 +257,7 @@ function QuantitativeFindingsTab({ detail, profile }: { detail: DemoCaseDetail; 
         <HeadlineCards detail={detail} />
         {topChanged.length ? <LongitudinalPanel metrics={topChanged} /> : null}
         <OutlierPanel detail={detail} includePrevious />
+        {profile.corticometryMetrics.length ? <CentileCurvesSection corticometryMetrics={profile.corticometryMetrics} patientAge={detail.patient.age_at_study} /> : null}
         {profile.volumetryMetrics.length ? <QuantitativeMetricsPanel metrics={volumetryLong} title="Longitudinal volumetry metrics" includePrevious showProgressiveDisclosure /> : null}
         {profile.corticometryMetrics.length ? <QuantitativeMetricsPanel metrics={corticometryLong} title="Longitudinal corticometry metrics" includePrevious showProgressiveDisclosure /> : null}
       </>

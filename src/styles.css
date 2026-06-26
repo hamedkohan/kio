@@ -726,6 +726,25 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .ai-boundary p, .safe-note p { margin: .3rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.5; }
 .ai-boundary ul { margin: .4rem 0 0; padding-inline-start: 1.1rem; color: var(--muted); font-size: .72rem; line-height: 1.6; }
 .report-draft-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--kio-font-sans); font-size: .78rem; line-height: 1.65; color: var(--text); }
+
+.centile-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .8rem; }
+.segmented { display: inline-flex; padding: .15rem; background: rgba(231, 244, 242, .8); border: 1px solid var(--line); border-radius: .6rem; }
+.segmented button { padding: .25rem .7rem; font-size: .74rem; font-weight: 700; color: var(--muted); background: transparent; border: 0; border-radius: .45rem; cursor: pointer; }
+.segmented button.active { color: var(--accent-dark); background: #fff; box-shadow: 0 1px 3px rgba(18, 58, 53, .12); }
+.centile-legend { display: flex; flex-wrap: wrap; gap: .7rem; color: var(--muted); font-size: .68rem; }
+.centile-legend span { display: inline-flex; align-items: center; gap: .3rem; }
+.centile-legend i { width: .7rem; height: .7rem; border-radius: 3px; display: inline-block; }
+.centile-legend .lg-red { background: rgba(220, 38, 38, .35); }
+.centile-legend .lg-amber { background: rgba(245, 158, 11, .4); }
+.centile-legend .lg-green { background: rgba(22, 163, 74, .35); }
+.centile-legend .lg-dot { width: .6rem; height: .6rem; border-radius: 50%; background: #dc2626; }
+.centile-legend .lg-dot-prev { width: .6rem; height: .6rem; border-radius: 50%; background: #fff; border: 1.5px solid #0f172a; }
+.centile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .9rem; }
+.centile-chart { margin: 0; padding: .5rem .5rem .35rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; }
+.centile-chart figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; margin-bottom: .2rem; }
+.centile-chart figcaption strong { font-size: .76rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.centile-chart figcaption span { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+.centile-axis-note { margin: .15rem 0 0; color: var(--muted); font-size: .62rem; text-align: center; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

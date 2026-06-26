@@ -8,12 +8,12 @@ type Status = "loading" | "ready" | "error";
 // Real WebGL 3D mesh viewer (NiiVue). Rotatable/zoomable by mouse.
 // `meshUrl` defaults to a self-hosted sample so it always renders; the pipeline's
 // real cortical surface (and per-region atrophy values) will replace it via the API.
-export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatable cortical surface — drag to rotate, scroll to zoom" }: { meshUrl?: string; title?: string; subtitle?: string }) {
+export function BrainViewer3D({ meshUrl, hasRegionalMap = true, title = "3D brain", subtitle = "Rotatable cortical surface — drag to rotate, scroll to zoom" }: { meshUrl: string; hasRegionalMap?: boolean; title?: string; subtitle?: string }) {
   const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const nvRef = useRef<Niivue | null>(null);
   const [status, setStatus] = useState<Status>("loading");
-  const url = meshUrl ?? `${import.meta.env.BASE_URL}demo-data/mesh/brain-fsaverage.ply`;
+  const url = meshUrl;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,8 +67,10 @@ export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatab
         </div>
       </div>
       <div className="ai-boundary">
-        <strong>{t("Real anatomical brain (fsaverage5)")}</strong>
-        <p>{t("Real FreeSurfer cortical surface rendered in NiiVue, shaded by curvature and coloured by lobe from this case's percentile data (red = low percentile / atrophied). Exact per-region (Desikan-Killiany) colouring and radiologist annotation will use the parcellation delivered with your pipeline mesh.")}</p>
+        <strong>{hasRegionalMap ? t("Real anatomical brain (fsaverage5)") : t("No regional map for this case")}</strong>
+        <p>{hasRegionalMap
+          ? t("Real FreeSurfer cortical surface (NiiVue), shaded by curvature and coloured by lobe from THIS case's percentile data (red = low percentile / atrophied). Exact per-region (Desikan-Killiany) colouring and radiologist annotation will use the parcellation delivered with your pipeline mesh.")
+          : t("This case has no cortical volumetry/corticometry module, so the surface is shown in neutral grey. Cases with regional data are coloured by percentile.")}</p>
       </div>
     </PanelCard>
   );

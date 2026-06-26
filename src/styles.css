@@ -742,9 +742,22 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .centile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .9rem; }
 .centile-chart { margin: 0; padding: .5rem .5rem .35rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; }
 .centile-chart figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; margin-bottom: .2rem; }
-.centile-chart figcaption strong { font-size: .76rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.centile-chart figcaption span { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+.centile-chart figcaption { flex-direction: column; align-items: stretch; gap: .15rem; }
+.centile-head { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.centile-head strong { font-size: .78rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.centile-badge { flex: none; font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; padding: .1rem .35rem; border-radius: .35rem; }
+.centile-badge.outlier { color: #fff; background: #dc2626; }
+.centile-badge.watch { color: #92400e; background: #fde68a; }
+.centile-vals { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; }
+.centile-vals > span:first-child { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+.centile-change { font-size: .66rem; font-weight: 800; white-space: nowrap; }
+.centile-change.down { color: #b91c1c; }
+.centile-change.up { color: #15803d; }
 .centile-axis-note { margin: .15rem 0 0; color: var(--muted); font-size: .62rem; text-align: center; }
+.centile-chart.level-outlier { border-color: rgba(220, 38, 38, .55); border-inline-start: 3px solid #dc2626; }
+.centile-chart.level-watch { border-color: rgba(245, 158, 11, .55); border-inline-start: 3px solid #f59e0b; }
+.centile-tip { padding: .4rem .55rem; background: rgba(15, 23, 42, .92); color: #fff; border-radius: .45rem; font-size: .68rem; line-height: 1.5; }
+.centile-tip strong { display: block; margin-bottom: .15rem; font-size: .7rem; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

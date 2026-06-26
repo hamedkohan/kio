@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { Area, ComposedChart, Line, ReferenceDot, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, ComposedChart, Line, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useI18n } from "../i18n";
 import { EmptyState, PanelCard } from "./ui";
 import type { DemoQuantitativeMetric } from "../data/kio-demo/types";
 
-// AD-relevant cortical regions shown first; the rest are available behind "view all".
+// AD-relevant cortical regions used as a tie-breaker after the clinical attention score.
 const PRIORITY_STRUCTURES = [
   "entorhinal",
   "inferiorparietal",
@@ -52,17 +52,22 @@ function inverseNormalCdf(p: number): number {
 
 type CentileRow = {
   age: number;
+  // stacked band deltas (for filled areas)
   rBelow5: number;
   a5_25: number;
   g25_75: number;
   a75_95: number;
   r95Top: number;
+  // absolute boundaries (for the tooltip)
+  p5: number;
+  p25: number;
   p50: number;
+  p75: number;
+  p95: number;
 };
 
 function buildCentileSeries(value: number, percentile: number, patientAge: number) {
   const z = inverseNormalCdf(percentile / 100);
-  // Anchor the median so the patient's value lands exactly on its reported percentile.
   const medianAtPatientAge = value / (1 + z * CV);
 
   const raw: Array<{ age: number; p5: number; p25: number; p50: number; p75: number; p95: number }> = [];
@@ -89,10 +94,39 @@ function buildCentileSeries(value: number, percentile: number, patientAge: numbe
     g25_75: row.p75 - row.p25,
     a75_95: row.p95 - row.p75,
     r95Top: yMax - row.p95,
+    p5: row.p5,
+    p25: row.p25,
     p50: row.p50,
+    p75: row.p75,
+    p95: row.p95,
   }));
 
   return { rows, yMin, yMax };
+}
+
+type AttentionLevel = "outlier" | "watch" | "normal";
+
+function attentionFor(metric: DemoQuantitativeMetric): { level: AttentionLevel; score: number; needsAttention: boolean } {
+  const pct = metric.percentile ?? 50;
+  const changeAbs = Math.abs(metric.change_percent ?? 0);
+  const outlier = pct < 5 || pct > 95;
+  const watch = !outlier && (pct < 25 || pct > 75 || changeAbs >= 5);
+  const level: AttentionLevel = outlier ? "outlier" : watch ? "watch" : "normal";
+  const score = (outlier ? 1000 : 0) + (watch ? 100 : 0) + changeAbs;
+  return { level, score, needsAttention: outlier || watch };
+}
+
+function BandTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: CentileRow }> }) {
+  const { t, formatNumber } = useI18n();
+  if (!active || !payload || !payload.length) return null;
+  const row = payload[0].payload;
+  return (
+    <div className="centile-tip">
+      <strong>{t("Age")} {formatNumber(row.age)}</strong>
+      <div>{t("Median")}: <span dir="ltr">{row.p50.toFixed(2)} mm</span></div>
+      <div>{t("Normal range (p5–p95)")}: <span dir="ltr">{row.p5.toFixed(2)}–{row.p95.toFixed(2)} mm</span></div>
+    </div>
+  );
 }
 
 function CentileCurveChart({ metric, patientAge }: { metric: DemoQuantitativeMetric; patientAge: number }) {
@@ -100,35 +134,40 @@ function CentileCurveChart({ metric, patientAge }: { metric: DemoQuantitativeMet
   const percentile = metric.percentile ?? 50;
   const { rows, yMin, yMax } = useMemo(() => buildCentileSeries(metric.value, percentile, patientAge), [metric.value, percentile, patientAge]);
   const hasPrevious = metric.previous_value !== null && metric.previous_value !== undefined;
+  const change = metric.change_percent ?? null;
+  const { level } = attentionFor(metric);
+  const prevX = Math.max(AGE_MIN, patientAge - 1.2);
 
   return (
-    <figure className="centile-chart">
+    <figure className={`centile-chart level-${level}`}>
       <figcaption>
-        <strong>{tv(metric.structure)}</strong>
-        <span dir="ltr">{metric.value} {metric.unit} · p{formatNumber(percentile)}</span>
+        <div className="centile-head">
+          <strong>{tv(metric.structure)}</strong>
+          {level !== "normal" ? <span className={`centile-badge ${level}`}>{level === "outlier" ? t("Outlier") : t("Watch")}</span> : null}
+        </div>
+        <div className="centile-vals">
+          <span dir="ltr">{metric.value} {metric.unit} · p{formatNumber(percentile)}</span>
+          {change !== null ? <span className={`centile-change ${change < 0 ? "down" : "up"}`} dir="ltr">{change < 0 ? "▼" : "▲"} {Math.abs(change)}%</span> : null}
+        </div>
       </figcaption>
-      <ResponsiveContainer width="100%" height={170}>
+      <ResponsiveContainer width="100%" height={168}>
         <ComposedChart data={rows} margin={{ top: 6, right: 8, bottom: 2, left: -18 }}>
           <XAxis dataKey="age" type="number" domain={[AGE_MIN, AGE_MAX]} ticks={[20, 40, 60, 80]} tick={{ fontSize: 9 }} tickLine={false} axisLine={{ stroke: "#cbd5e1" }} />
           <YAxis domain={[Number(yMin.toFixed(2)), Number(yMax.toFixed(2))]} tick={{ fontSize: 9 }} tickLine={false} axisLine={false} width={34} tickFormatter={(value: number) => value.toFixed(1)} />
-          <Area type="linear" dataKey="rBelow5" stackId="band" stroke="none" fill="#dc2626" fillOpacity={0.16} isAnimationActive={false} />
-          <Area type="linear" dataKey="a5_25" stackId="band" stroke="none" fill="#f59e0b" fillOpacity={0.18} isAnimationActive={false} />
-          <Area type="linear" dataKey="g25_75" stackId="band" stroke="none" fill="#16a34a" fillOpacity={0.16} isAnimationActive={false} />
-          <Area type="linear" dataKey="a75_95" stackId="band" stroke="none" fill="#f59e0b" fillOpacity={0.18} isAnimationActive={false} />
-          <Area type="linear" dataKey="r95Top" stackId="band" stroke="none" fill="#dc2626" fillOpacity={0.16} isAnimationActive={false} />
-          <Line type="linear" dataKey="p50" stroke="#475569" strokeWidth={1} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
+          <Tooltip content={<BandTooltip />} cursor={{ stroke: "#94a3b8", strokeDasharray: "3 3" }} />
+          <Area type="linear" dataKey="rBelow5" stackId="band" stroke="none" fill="#dc2626" fillOpacity={0.16} isAnimationActive={false} activeDot={false} />
+          <Area type="linear" dataKey="a5_25" stackId="band" stroke="none" fill="#f59e0b" fillOpacity={0.18} isAnimationActive={false} activeDot={false} />
+          <Area type="linear" dataKey="g25_75" stackId="band" stroke="none" fill="#16a34a" fillOpacity={0.16} isAnimationActive={false} activeDot={false} />
+          <Area type="linear" dataKey="a75_95" stackId="band" stroke="none" fill="#f59e0b" fillOpacity={0.18} isAnimationActive={false} activeDot={false} />
+          <Area type="linear" dataKey="r95Top" stackId="band" stroke="none" fill="#dc2626" fillOpacity={0.16} isAnimationActive={false} activeDot={false} />
+          <Line type="linear" dataKey="p50" stroke="#475569" strokeWidth={1} strokeDasharray="4 3" dot={false} activeDot={false} isAnimationActive={false} />
           {hasPrevious ? (
-            <ReferenceLine
-              ifOverflow="extendDomain"
-              segment={[{ x: Math.max(AGE_MIN, patientAge - 1.2), y: metric.previous_value as number }, { x: patientAge, y: metric.value }]}
-              stroke="#0f172a"
-              strokeWidth={1}
-            />
+            <ReferenceLine ifOverflow="extendDomain" segment={[{ x: prevX, y: metric.previous_value as number }, { x: patientAge, y: metric.value }]} stroke="#0f172a" strokeWidth={1} />
           ) : null}
           {hasPrevious ? (
-            <ReferenceDot x={Math.max(AGE_MIN, patientAge - 1.2)} y={metric.previous_value as number} r={3} fill="#fff" stroke="#0f172a" strokeWidth={1.5} ifOverflow="extendDomain" />
+            <ReferenceDot x={prevX} y={metric.previous_value as number} r={3.5} fill="#fff" stroke="#0f172a" strokeWidth={1.5} ifOverflow="extendDomain" label={previousLabel(metric, formatNumber)} />
           ) : null}
-          <ReferenceDot x={patientAge} y={metric.value} r={4} fill="#dc2626" stroke="#fff" strokeWidth={1.5} ifOverflow="extendDomain" />
+          <ReferenceDot x={patientAge} y={metric.value} r={4.5} fill="#dc2626" stroke="#fff" strokeWidth={1.5} ifOverflow="extendDomain" label={currentLabel(metric, formatNumber)} />
         </ComposedChart>
       </ResponsiveContainer>
       <p className="centile-axis-note">{t("Cortical thickness (mm) vs age")}</p>
@@ -136,28 +175,41 @@ function CentileCurveChart({ metric, patientAge }: { metric: DemoQuantitativeMet
   );
 }
 
+function currentLabel(metric: DemoQuantitativeMetric, formatNumber: (value: number) => string) {
+  return { value: `${metric.value} (p${formatNumber(metric.percentile ?? 50)})`, position: "top" as const, fontSize: 9, fill: "#b91c1c" };
+}
+
+function previousLabel(metric: DemoQuantitativeMetric, formatNumber: (value: number) => string) {
+  return { value: metric.previous_percentile != null ? `p${formatNumber(metric.previous_percentile)}` : `${metric.previous_value}`, position: "bottom" as const, fontSize: 8, fill: "#475569" };
+}
+
 export function CentileCurvesSection({ corticometryMetrics, patientAge }: { corticometryMetrics: DemoQuantitativeMetric[]; patientAge: number }) {
-  const { t } = useI18n();
+  const { t, formatNumber } = useI18n();
   const hemispheres = useMemo(() => {
     const set = new Set(corticometryMetrics.map((metric) => metric.hemisphere));
     return ["total", "left", "right"].filter((hemi) => set.has(hemi));
   }, [corticometryMetrics]);
   const [hemisphere, setHemisphere] = useState(hemispheres[0] ?? "total");
+  const [onlyAttention, setOnlyAttention] = useState(true);
 
-  const structuresForHemi = useMemo(() => {
+  const sortedStructures = useMemo(() => {
     const byStructure = new Map<string, DemoQuantitativeMetric>();
     corticometryMetrics
       .filter((metric) => metric.hemisphere === hemisphere && metric.percentile !== null && metric.percentile !== undefined)
       .forEach((metric) => {
         if (!byStructure.has(metric.structure)) byStructure.set(metric.structure, metric);
       });
-    const list = [...byStructure.values()];
-    return list.sort((a, b) => {
+    return [...byStructure.values()].sort((a, b) => {
+      const sa = attentionFor(a).score;
+      const sb = attentionFor(b).score;
+      if (sb !== sa) return sb - sa;
       const ai = PRIORITY_STRUCTURES.indexOf(a.structure.toLowerCase());
       const bi = PRIORITY_STRUCTURES.indexOf(b.structure.toLowerCase());
       return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.structure.localeCompare(b.structure);
     });
   }, [corticometryMetrics, hemisphere]);
+
+  const attentionCount = useMemo(() => sortedStructures.filter((metric) => attentionFor(metric).needsAttention).length, [sortedStructures]);
 
   if (!corticometryMetrics.length) {
     return (
@@ -167,11 +219,13 @@ export function CentileCurvesSection({ corticometryMetrics, patientAge }: { cort
     );
   }
 
-  const primary = structuresForHemi.slice(0, 6);
-  const rest = structuresForHemi.slice(6);
+  const effectiveOnlyAttention = onlyAttention && attentionCount > 0;
+  const display = effectiveOnlyAttention ? sortedStructures.filter((metric) => attentionFor(metric).needsAttention) : sortedStructures;
+  const primary = display.slice(0, 6);
+  const rest = display.slice(6);
 
   return (
-    <PanelCard title="Reference centile curves" subtitle="Cortical thickness vs age, with the patient point on the normative band">
+    <PanelCard title="Reference centile curves" subtitle="Cortical thickness vs age — prioritised by clinical attention, patient point on the normative band">
       <div className="centile-toolbar">
         <div className="segmented" role="tablist" aria-label={t("Hemisphere")}>
           {hemispheres.map((hemi) => (
@@ -180,25 +234,39 @@ export function CentileCurvesSection({ corticometryMetrics, patientAge }: { cort
             </button>
           ))}
         </div>
-        <div className="centile-legend">
-          <span><i className="lg-red" /> {t("Outlier (<5 / >95)")}</span>
-          <span><i className="lg-amber" /> 5–25 · 75–95</span>
-          <span><i className="lg-green" /> 25–75</span>
-          <span><i className="lg-dot" /> {t("Current")}</span>
-          <span><i className="lg-dot-prev" /> {t("Previous")}</span>
+        <div className="segmented" role="tablist" aria-label={t("Filter")}>
+          <button type="button" role="tab" aria-selected={effectiveOnlyAttention} className={effectiveOnlyAttention ? "active" : ""} onClick={() => setOnlyAttention(true)} disabled={attentionCount === 0}>
+            {t("Needs attention")} · {formatNumber(attentionCount)}
+          </button>
+          <button type="button" role="tab" aria-selected={!effectiveOnlyAttention} className={!effectiveOnlyAttention ? "active" : ""} onClick={() => setOnlyAttention(false)}>
+            {t("All")} · {formatNumber(sortedStructures.length)}
+          </button>
         </div>
       </div>
-      <div className="centile-grid">
-        {primary.map((metric) => <CentileCurveChart key={metric.metric_id} metric={metric} patientAge={patientAge} />)}
+      <div className="centile-legend">
+        <span><i className="lg-red" /> {t("Outlier (<5 / >95)")}</span>
+        <span><i className="lg-amber" /> 5–25 · 75–95</span>
+        <span><i className="lg-green" /> 25–75</span>
+        <span><i className="lg-dot" /> {t("Current")}</span>
+        <span><i className="lg-dot-prev" /> {t("Previous")}</span>
       </div>
-      {rest.length ? (
-        <details className="progressive-metrics">
-          <summary>{t("View all structures")} ({rest.length})</summary>
+      {display.length ? (
+        <>
           <div className="centile-grid">
-            {rest.map((metric) => <CentileCurveChart key={metric.metric_id} metric={metric} patientAge={patientAge} />)}
+            {primary.map((metric) => <CentileCurveChart key={metric.metric_id} metric={metric} patientAge={patientAge} />)}
           </div>
-        </details>
-      ) : null}
+          {rest.length ? (
+            <details className="progressive-metrics">
+              <summary>{t("Show more structures")} ({formatNumber(rest.length)})</summary>
+              <div className="centile-grid">
+                {rest.map((metric) => <CentileCurveChart key={metric.metric_id} metric={metric} patientAge={patientAge} />)}
+              </div>
+            </details>
+          ) : null}
+        </>
+      ) : (
+        <EmptyState title={t("No structures to show")} message={t("No corticometry structures match the current filter.")} />
+      )}
       <div className="ai-boundary">
         <strong>{t("About this reference model")}</strong>
         <p>{t("Reference bands are currently modelled and anchored to each reported percentile. They will be replaced by the normative curves delivered from the AI pipeline API.")}</p>

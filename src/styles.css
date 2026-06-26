@@ -775,6 +775,32 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .centile-modal-head p { margin: 0; color: var(--muted); font-size: .78rem; }
 .centile-modal-close { flex: none; width: 2rem; height: 2rem; font-size: 1.2rem; line-height: 1; color: var(--muted); background: var(--accent-soft); border: 0; border-radius: 50%; cursor: pointer; }
 .centile-modal-close:hover { color: var(--ink); }
+
+/* atrophy maps viewer */
+.atrophy-viewer { border: 1px solid var(--line); border-radius: .8rem; background: #0b1220; overflow: hidden; }
+.atrophy-viewer.fs { position: fixed; inset: 0; z-index: 60; border-radius: 0; display: flex; flex-direction: column; }
+.atrophy-stage { position: relative; display: grid; grid-template-columns: 1fr auto; gap: .5rem; padding: .5rem; }
+.atrophy-viewer.fs .atrophy-stage { flex: 1; min-height: 0; }
+.atrophy-zoom-wrap { width: 100% !important; height: 26rem !important; background: #0b1220; border-radius: .5rem; }
+.atrophy-viewer.fs .atrophy-zoom-wrap { height: 100% !important; }
+.atrophy-zoom-content { width: 100%; height: 100%; display: grid; place-items: center; }
+.atrophy-zoom-content img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.atrophy-controls { position: absolute; top: .7rem; inset-inline-end: 5rem; z-index: 3; display: flex; gap: .3rem; }
+.atrophy-controls button { width: 2rem; height: 2rem; font-size: 1rem; line-height: 1; color: #e2e8f0; background: rgba(15, 23, 42, .8); border: 1px solid rgba(148, 163, 184, .35); border-radius: .45rem; cursor: pointer; }
+.atrophy-controls button:hover { background: rgba(30, 41, 59, .95); }
+.atrophy-caption { margin: 0; padding: .35rem .6rem .5rem; color: #cbd5e1; font-size: .72rem; }
+/* native percentile colour scale */
+.atrophy-colorbar { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: .3rem; }
+.atrophy-colorbar-title { color: #cbd5e1; font-size: .6rem; writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .05em; }
+.atrophy-colorbar-body { display: flex; gap: .25rem; height: 22rem; }
+.atrophy-viewer.fs .atrophy-colorbar-body { height: 100%; }
+.atrophy-colorbar-gradient { width: 1rem; border-radius: .25rem; border: 1px solid rgba(148, 163, 184, .4); background: linear-gradient(to bottom, #ffffff 0%, #fee2e2 5%, #fecaca 25%, #fca5a5 50%, #f87171 75%, #ef4444 95%, #7f1d1d 100%); }
+.atrophy-colorbar-ticks { display: flex; flex-direction: column; justify-content: space-between; color: #cbd5e1; font-size: .58rem; }
+.atrophy-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .5rem; margin-top: .7rem; }
+.atrophy-thumbs button { padding: .25rem; background: #fff; border: 1px solid var(--line); border-radius: .5rem; cursor: pointer; }
+.atrophy-thumbs button.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.atrophy-thumbs img { width: 100%; height: 4.5rem; object-fit: cover; border-radius: .35rem; }
+.atrophy-thumbs span { display: block; margin-top: .2rem; font-size: .62rem; color: var(--muted); text-align: center; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

@@ -22,7 +22,8 @@ import type {
 const seed = seedJson as unknown as DemoSeed;
 const assetManifest = assetManifestJson as unknown as DemoAsset[];
 
-export const DEMO_PAGE_RENDER_BASE_URL = "/demo-data/kio/page_renders";
+// Respect the Vite base path (e.g. "/kio/" on GitHub Pages) so public assets resolve.
+export const DEMO_PAGE_RENDER_BASE_URL = `${import.meta.env.BASE_URL}demo-data/kio/page_renders`;
 
 export function getDemoSeed(): DemoSeed {
   return seed;
@@ -118,6 +119,32 @@ export function getAssetsForCase(caseId: string): DemoAsset[] {
 
 export function getAssetUrl(asset: DemoAsset): string {
   return `${DEMO_PAGE_RENDER_BASE_URL}/${asset.path.split("/").pop()}`;
+}
+
+export type AtrophyView = { label: string; imageUrl: string };
+
+export type AtrophyMap = {
+  available: boolean;
+  colormap: string; // "percentile": 0 = severe (dark red) … 100 = normal (white)
+  studyDate: string;
+  views: AtrophyView[]; // API will deliver individually-labelled views here
+  montageUrl?: string; // demo fallback: the pipeline's multi-view montage page
+};
+
+// Forward-looking contract for the 3D atrophy maps. In the demo the eight views
+// are baked into a single montage page; the API will instead deliver per-view
+// images (and, later, a surface mesh with per-region values for interactive 3D).
+export function getAtrophyMapForCase(caseId: string): AtrophyMap {
+  const caseRecord = getCaseById(caseId);
+  const assets = getAssetsForCase(caseId);
+  const montage = assets.find((asset) => /longitudinal/.test(asset.module) && asset.page_number >= 10);
+  return {
+    available: Boolean(montage),
+    colormap: "percentile",
+    studyDate: caseRecord?.study_date ?? "",
+    views: [],
+    montageUrl: montage ? getAssetUrl(montage) : undefined,
+  };
 }
 
 export function getDemoCaseSummaries(): DemoCaseSummary[] {

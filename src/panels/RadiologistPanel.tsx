@@ -3,7 +3,8 @@ import { useI18n } from "../i18n";
 import { EmptyState, MetricCard, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip } from "../components/ui";
 import { LongitudinalPanel, QuantitativeMetricsPanel, VisualScoresPanel } from "../components/DemoReportWorkspace";
 import { CentileCurvesSection } from "../components/CentileCurves";
-import { getDemoCaseDetail, getDemoCaseSummaries, getKeyMetrics, isOutlierMetric, sortMetricsForReview } from "../data/kio-demo/repository";
+import { getAtrophyMapForCase, getDemoCaseDetail, getDemoCaseSummaries, getKeyMetrics, isOutlierMetric, sortMetricsForReview } from "../data/kio-demo/repository";
+import { AtrophyMaps } from "../components/AtrophyMaps";
 import type { DemoCaseDetail, DemoCaseSummary, DemoQuantitativeMetric } from "../data/kio-demo/types";
 import type { RadiologistCaseReviewView } from "../domain";
 
@@ -81,7 +82,7 @@ export function RadiologistPanel({ activeView, onAction }: Props) {
   if (activeView === "images") {
     return (
       <>
-        <PageHeader eyebrow={`${activeCaseId} · ${t("Source references")}`} title="Image / Annotation" description="Source page renders are reference material only. These are not diagnostic image viewers." />
+        <PageHeader eyebrow={`${activeCaseId} · ${t("Imaging & atrophy maps")}`} title="Image / Annotation" description="AI-rendered atrophy maps for the selected case. Not a diagnostic DICOM viewer." />
         {contextBar}
         <ImageAnnotationTab detail={detail} />
       </>
@@ -354,14 +355,18 @@ function OutlierPanel({ detail, includePrevious = false }: { detail: DemoCaseDet
 
 function ImageAnnotationTab({ detail }: { detail: DemoCaseDetail }) {
   const { t } = useI18n();
+  const atrophyMap = getAtrophyMapForCase(detail.caseRecord.case_id);
   return (
-    <PanelCard title="Image / annotation context" subtitle="No diagnostic image viewer exists in this prototype">
-      <div className="status-list">
-        <div><span>{t("Case ID")}</span><strong dir="ltr">{detail.caseRecord.case_id}</strong></div>
-        <div><span>{t("Modality")}</span><strong>{detail.caseRecord.modality}</strong></div>
-      </div>
-      <p className="context-copy">{t("Imaging will be available through the platform viewer / API. Structured data is the source of truth.")}</p>
-    </PanelCard>
+    <>
+      <PanelCard title="Image / annotation context" subtitle="No diagnostic DICOM viewer exists in this prototype">
+        <div className="status-list">
+          <div><span>{t("Case ID")}</span><strong dir="ltr">{detail.caseRecord.case_id}</strong></div>
+          <div><span>{t("Modality")}</span><strong>{detail.caseRecord.modality}</strong></div>
+        </div>
+        <p className="context-copy">{t("Diagnostic imaging will be available through the platform viewer / API. Structured data is the source of truth.")}</p>
+      </PanelCard>
+      <AtrophyMaps map={atrophyMap} />
+    </>
   );
 }
 

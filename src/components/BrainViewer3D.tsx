@@ -13,7 +13,7 @@ export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatab
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const nvRef = useRef<Niivue | null>(null);
   const [status, setStatus] = useState<Status>("loading");
-  const url = meshUrl ?? `${import.meta.env.BASE_URL}demo-data/mesh/sample.obj`;
+  const url = meshUrl ?? `${import.meta.env.BASE_URL}demo-data/mesh/brain-demo.ply`;
 
   useEffect(() => {
     let cancelled = false;
@@ -27,10 +27,8 @@ export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatab
     (async () => {
       try {
         await nv.attachToCanvas(canvas);
-        await nv.loadMeshes([{ url, rgba255: [220, 180, 175, 255] }]);
+        await nv.loadMeshes([{ url }]); // PLY carries per-vertex colours
         if (cancelled) return;
-        const mesh = nv.meshes[0];
-        if (mesh) nv.setMeshShader(mesh.id, "Matte");
         nv.setRenderAzimuthElevation(120, 15);
         nv.drawScene();
         setStatus("ready");
@@ -61,10 +59,16 @@ export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatab
         <div className="brain3d-controls">
           <button type="button" onClick={resetView} aria-label={t("Reset view")}>⟳</button>
         </div>
+        <div className="brain3d-legend">
+          <span>{t("Percentile")}</span>
+          <i className="brain3d-bar" />
+          <small dir="ltr">0</small>
+          <small dir="ltr">100</small>
+        </div>
       </div>
       <div className="ai-boundary">
-        <strong>{t("Placeholder geometry")}</strong>
-        <p>{t("This is the real WebGL 3D engine (NiiVue) rendering a sample surface. Upload your pipeline's cortical mesh (.mz3 / .gii / .obj / .glb) to render the actual brain, coloured per region by percentile and annotatable by the radiologist.")}</p>
+        <strong>{t("Demo brain (illustrative)")}</strong>
+        <p>{t("Real WebGL 3D engine (NiiVue). This demo surface is coloured per region by this case's percentile data (red = low percentile / atrophied). Anatomy is illustrative; upload your pipeline's cortical mesh (.mz3 / .gii / FreeSurfer) for the true brain with real region mapping and radiologist annotation.")}</p>
       </div>
     </PanelCard>
   );

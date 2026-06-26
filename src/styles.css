@@ -810,6 +810,11 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .brain3d-controls { position: absolute; top: .7rem; inset-inline-end: .7rem; display: flex; gap: .3rem; }
 .brain3d-controls button { width: 2rem; height: 2rem; font-size: 1rem; color: #e2e8f0; background: rgba(15, 23, 42, .8); border: 1px solid rgba(148, 163, 184, .35); border-radius: .45rem; cursor: pointer; }
 .brain3d-controls button:hover { background: rgba(30, 41, 59, .95); }
+.brain3d-legend { position: absolute; bottom: .7rem; inset-inline-start: .7rem; display: grid; grid-template-columns: auto auto; align-items: center; gap: .15rem .4rem; padding: .35rem .5rem; background: rgba(15, 23, 42, .72); border-radius: .45rem; }
+.brain3d-legend span { grid-column: 1 / -1; color: #cbd5e1; font-size: .58rem; text-transform: uppercase; letter-spacing: .04em; }
+.brain3d-legend .brain3d-bar { grid-column: 1 / -1; width: 9rem; height: .5rem; border-radius: .25rem; background: linear-gradient(to right, #7f1d1d 0%, #ef4444 5%, #f87171 25%, #fca5a5 50%, #fecaca 75%, #fee2e2 95%, #ffffff 100%); }
+.brain3d-legend small { color: #cbd5e1; font-size: .56rem; }
+.brain3d-legend small:last-of-type { justify-self: end; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

@@ -13,7 +13,7 @@ export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatab
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const nvRef = useRef<Niivue | null>(null);
   const [status, setStatus] = useState<Status>("loading");
-  const url = meshUrl ?? `${import.meta.env.BASE_URL}demo-data/mesh/brain-demo.ply`;
+  const url = meshUrl ?? `${import.meta.env.BASE_URL}demo-data/mesh/brain-fsaverage.ply`;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,8 +67,8 @@ export function BrainViewer3D({ meshUrl, title = "3D brain", subtitle = "Rotatab
         </div>
       </div>
       <div className="ai-boundary">
-        <strong>{t("Demo brain (illustrative)")}</strong>
-        <p>{t("Real WebGL 3D engine (NiiVue). This demo surface is coloured per region by this case's percentile data (red = low percentile / atrophied). Anatomy is illustrative; upload your pipeline's cortical mesh (.mz3 / .gii / FreeSurfer) for the true brain with real region mapping and radiologist annotation.")}</p>
+        <strong>{t("Real anatomical brain (fsaverage5)")}</strong>
+        <p>{t("Real FreeSurfer cortical surface rendered in NiiVue, shaded by curvature and coloured by lobe from this case's percentile data (red = low percentile / atrophied). Exact per-region (Desikan-Killiany) colouring and radiologist annotation will use the parcellation delivered with your pipeline mesh.")}</p>
       </div>
     </PanelCard>
   );

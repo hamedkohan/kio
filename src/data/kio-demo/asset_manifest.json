@@ -1,0 +1,58 @@
+[
+  {
+    "asset_id": "asset-visual_mri_dementia_protocol-p1",
+    "type": "source_page_render",
+    "module": "visual_mri_dementia_protocol",
+    "source_pdf": "Report (1).pdf",
+    "page_number": 1,
+    "path": "assets/page_renders/visual_mri_dementia_protocol_page_1.png"
+  },
+  {
+    "asset_id": "asset-ai_volumetry_single-p1",
+    "type": "source_page_render",
+    "module": "ai_volumetry_single",
+    "source_pdf": "Mahnaz Kahnamooei_0040442411AD_Vol_KIO.pdf",
+    "page_number": 1,
+    "path": "assets/page_renders/ai_volumetry_single_page_1.png"
+  },
+  {
+    "asset_id": "asset-ai_volumetry_longitudinal-p1",
+    "type": "source_page_render",
+    "module": "ai_volumetry_longitudinal",
+    "source_pdf": "KIO_Volumetry_TwoTimePoint_s.pdf",
+    "page_number": 1,
+    "path": "assets/page_renders/ai_volumetry_longitudinal_page_1.png"
+  },
+  {
+    "asset_id": "asset-ai_volumetry_longitudinal-p21",
+    "type": "source_page_render",
+    "module": "ai_volumetry_longitudinal",
+    "source_pdf": "KIO_Volumetry_TwoTimePoint_s.pdf",
+    "page_number": 21,
+    "path": "assets/page_renders/ai_volumetry_longitudinal_page_21.png"
+  },
+  {
+    "asset_id": "asset-ai_corticometry_longitudinal-p1",
+    "type": "source_page_render",
+    "module": "ai_corticometry_longitudinal",
+    "source_pdf": "KIO_Corticometry_TwoTimePoint_s.pdf",
+    "page_number": 1,
+    "path": "assets/page_renders/ai_corticometry_longitudinal_page_1.png"
+  },
+  {
+    "asset_id": "asset-ai_corticometry_longitudinal-p3",
+    "type": "source_page_render",
+    "module": "ai_corticometry_longitudinal",
+    "source_pdf": "KIO_Corticometry_TwoTimePoint_s.pdf",
+    "page_number": 3,
+    "path": "assets/page_renders/ai_corticometry_longitudinal_page_3.png"
+  },
+  {
+    "asset_id": "asset-ai_corticometry_longitudinal-p4",
+    "type": "source_page_render",
+    "module": "ai_corticometry_longitudinal",
+    "source_pdf": "KIO_Corticometry_TwoTimePoint_s.pdf",
+    "page_number": 4,
+    "path": "assets/page_renders/ai_corticometry_longitudinal_page_4.png"
+  }
+]

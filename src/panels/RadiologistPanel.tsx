@@ -3,6 +3,7 @@ import { useI18n } from "../i18n";
 import { EmptyState, MetricCard, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip } from "../components/ui";
 import { LongitudinalPanel, QuantitativeMetricsPanel, VisualScoresPanel } from "../components/DemoReportWorkspace";
 import { CentileCurvesSection } from "../components/CentileCurves";
+import { CaseContextBar } from "../components/CaseContextBar";
 import { getDemoCaseDetail, getDemoCaseSummaries, getKeyMetrics, isOutlierMetric, sortMetricsForReview } from "../data/kio-demo/repository";
 import { BrainViewer3D } from "../components/BrainViewer3D";
 import type { DemoCaseDetail, DemoCaseSummary, DemoQuantitativeMetric } from "../data/kio-demo/types";
@@ -46,7 +47,7 @@ export function RadiologistPanel({ activeView, onAction }: Props) {
   const profile = getCaseProfile(detail);
   const activeCaseId = detail.caseRecord.case_id;
   const contextBar = (
-    <RadiologistCaseContextBar summaries={demoCaseSummaries} detail={detail} selectedCaseId={activeCaseId} onSelectCase={setSelectedCaseId} />
+    <CaseContextBar summaries={demoCaseSummaries} detail={detail} selectedCaseId={activeCaseId} onSelectCase={setSelectedCaseId} />
   );
 
   if (activeView === "queue") {
@@ -512,33 +513,6 @@ function ReviewQueue({ summaries, selectedCaseId, onSelectCase }: { summaries: D
         </tbody>
       </table>
     </div>
-  );
-}
-
-function RadiologistCaseContextBar({
-  summaries,
-  detail,
-  selectedCaseId,
-  onSelectCase,
-}: {
-  summaries: DemoCaseSummary[];
-  detail: DemoCaseDetail;
-  selectedCaseId: string;
-  onSelectCase: (caseId: string) => void;
-}) {
-  const { t, tv, formatNumber } = useI18n();
-  return (
-    <section className="radiologist-case-context-bar" aria-label={t("Active imported case context")}>
-      <span className="rccb-label">{t("Active imported case")}</span>
-      <select className="rccb-select" aria-label={t("Active case")} value={selectedCaseId} onChange={(event) => onSelectCase(event.target.value)}>
-        {summaries.map((summary) => (
-          <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
-            {displayDemoPatientName(summary)} · {summary.caseRecord.case_id}
-          </option>
-        ))}
-      </select>
-      <StatusChip label={`${formatNumber(detail.outlierCount)} ${t("outliers")}`} tone={detail.outlierCount ? "attention" : "good"} />
-    </section>
   );
 }
 

@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../i18n";
 import type { KioCase } from "../types";
 import { CaseIdentity, CaseLifecycleStrip, EmptyState, EvidenceProvenanceStrip, EvidenceSection, InteractiveReportPreview, PageHeader, PanelCard, PercentileBar, ReportReadinessChecklist, ReportWorkspaceShell, StatusChip, SuppressedEvidenceNotice, Timeline, WorkflowReadinessPanel, WorkspaceHero } from "../components/ui";
 import { CaseJourney } from "../components/CaseJourney";
 import { ImagingEvidence } from "../components/ImagingEvidence";
+import { CaseContextBar } from "../components/CaseContextBar";
+import { getDemoCaseDetail, getDemoCaseSummaries } from "../data/kio-demo/repository";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
 import type { PhysicianBiomarkerEvidenceView, PhysicianCaseReviewView } from "../domain";
 
@@ -39,6 +41,9 @@ export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelect
   const selectedNeedsAction = actionable.some((item) => item.id === selected.id);
   const selectedReleasePending = /release approval pending|patient summary approved|ready for release|pdf pending/i.test(`${selected.reportStatus} ${selected.releaseStatus}`);
   const [note, setNote] = useState(selected.physicianNote);
+  const demoSummaries = useMemo(() => getDemoCaseSummaries(), []);
+  const [demoCaseId, setDemoCaseId] = useState(demoSummaries[0]?.caseRecord.case_id ?? "");
+  const demoDetail = getDemoCaseDetail(demoCaseId) ?? (demoSummaries[0] ? getDemoCaseDetail(demoSummaries[0].caseRecord.case_id) : undefined);
 
   useEffect(() => {
     setNote(selected.physicianNote);
@@ -69,12 +74,13 @@ export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelect
   if (activeView === "imaging") return (
     <>
       <PageHeader eyebrow={`${selected.id} · Radiologist-reviewed output`} title="Imaging Summary" description="Reviewed imaging evidence presented for clinical interpretation, without segmentation-editing tools." action={<StatusChip label={selected.radiologistStatus} />} />
+      {demoDetail ? <CaseContextBar summaries={demoSummaries} detail={demoDetail} selectedCaseId={demoCaseId} onSelectCase={setDemoCaseId} /> : null}
       <PanelCard title="Radiologist review summary" subtitle={selectedView.radiologistHandoffSummary || selected.radiologistComment || "No limitation note added."}>
         <div className="finding-summary">{selectedEvidence.metricRows.length ? selectedEvidence.metricRows.slice(0, 4).map((metric) => <div key={metric.id}><span className="finding-mark" /><strong>{tv(metric.label)}</strong><p>{t("Use as reviewed imaging evidence in the full clinical context.")}</p></div>) : selected.keyFindings.map((finding) => <div key={finding}><span className="finding-mark" /><strong>{tv(finding)}</strong><p>{t("Use as reviewed imaging evidence in the full clinical context.")}</p></div>)}</div>
       </PanelCard>
       <StructuredVisualSummaryCard view={selectedView} />
       <PhysicianEvidenceTable evidence={selectedEvidence} />
-      <ImagingEvidence />
+      <ImagingEvidence caseId={demoCaseId} />
     </>
   );
 

@@ -13,7 +13,12 @@ const LOBES = ["Frontal", "Parietal", "Temporal", "Occipital", "Cingulate"];
 export function ImagingEvidence({ caseId }: { caseId?: string }) {
   const { t } = useI18n();
   const summaries = useMemo(() => getDemoCaseSummaries(), []);
-  const [selected, setSelected] = useState(caseId ?? summaries[0]?.caseRecord.case_id ?? "");
+  const [internal, setInternal] = useState(caseId ?? summaries[0]?.caseRecord.case_id ?? "");
+  // When a caseId is supplied (e.g. driven by a panel-level sticky bar), the
+  // component is controlled and hides its own selector.
+  const controlled = caseId !== undefined;
+  const selected = controlled ? caseId : internal;
+  const setSelected = setInternal;
   const detail = getDemoCaseDetail(selected) ?? (summaries[0] ? getDemoCaseDetail(summaries[0].caseRecord.case_id) : undefined);
 
   if (!detail) {
@@ -31,13 +36,15 @@ export function ImagingEvidence({ caseId }: { caseId?: string }) {
         title="Imaging evidence (imported case)"
         subtitle="Radiologist-reviewed quantitative imaging evidence, presented for clinical interpretation"
         action={
-          <select className="rccb-select" aria-label={t("Imaging case")} value={selected} onChange={(event) => setSelected(event.target.value)}>
-            {summaries.map((summary) => (
-              <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
-                {summary.patient.name_fa || summary.patient.name} · {summary.caseRecord.case_id} · {summary.caseRecord.primary_module}
-              </option>
-            ))}
-          </select>
+          controlled ? undefined : (
+            <select className="rccb-select" aria-label={t("Imaging case")} value={selected} onChange={(event) => setSelected(event.target.value)}>
+              {summaries.map((summary) => (
+                <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
+                  {summary.patient.name_fa || summary.patient.name} · {summary.caseRecord.case_id} · {summary.caseRecord.primary_module}
+                </option>
+              ))}
+            </select>
+          )
         }
       >
         <div className="ai-boundary"><strong>{t("Decision support only")}</strong><p>{t("Reviewed imaging evidence supports physician interpretation; it is not a final diagnosis.")}</p></div>

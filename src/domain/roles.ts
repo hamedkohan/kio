@@ -31,6 +31,7 @@ export const ROLE_COMPATIBILITY_MAP: RoleCompatibilityMap = {
   radiologist: "radiologist",
   physician: "physician_neurologist",
   patient: "patient",
+  caregiver: "caregiver",
   research: "researcher",
 };
 

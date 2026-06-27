@@ -2,7 +2,7 @@ import type { AuditEvent } from "./domain/audit";
 import type { CaseBlocker, CaseState } from "./domain/caseState";
 import type { OwnerRoleLabel } from "./domain/caseStateSelectors";
 
-export type RoleId = "operations" | "radiologist" | "physician" | "patient" | "research";
+export type RoleId = "operations" | "radiologist" | "physician" | "patient" | "caregiver" | "research";
 
 export type TimelineEvent = {
   label: string;

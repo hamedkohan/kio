@@ -17,6 +17,7 @@ export const roleToSlug = {
   radiologist: "radiologist",
   physician: "neurologist",
   patient: "patient",
+  caregiver: "caregiver",
   research: "research",
 } as const;
 
@@ -26,6 +27,7 @@ export const slugToRole = {
   neurologist: "physician",
   physician: "physician",
   patient: "patient",
+  caregiver: "caregiver",
   research: "research",
 } as const;
 

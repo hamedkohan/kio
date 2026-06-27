@@ -24,6 +24,7 @@ import { OperationsPanel, operationsNav } from "./panels/OperationsPanel";
 import { RadiologistPanel, radiologistNav } from "./panels/RadiologistPanel";
 import { PhysicianPanel, physicianNav } from "./panels/PhysicianPanel";
 import { PatientPanel, patientNav } from "./panels/PatientPanel";
+import { CaregiverPanel, caregiverNav } from "./panels/CaregiverPanel";
 import { ResearchPanel, researchNav } from "./panels/ResearchPanel";
 import { applyPatientReleaseAction, applyPublicationApprovalAction, canPerformCaseAction, getLatestPatientReleasePackageForCase, getLatestPublicationApprovalForCase, getOperationsCaseCoordinationViews, getPatientPortalReleaseView, getPhysicianCaseReviewView, getRadiologistCaseReviewView, getReleaseSafetyCheckForPackage, guardCaseAction, guardCaseActionSequence, guardCreateCase, withDerivedCaseFields, type CaseAction, type ClinicalEvidenceCollections, type GuardedCaseActionContext, type GuardedTransitionResult } from "./domain";
 import { getNextPossibleStates } from "./domain/caseStateSelectors";
@@ -34,6 +35,7 @@ const defaultViews: Record<RoleId, string> = {
   radiologist: "queue",
   physician: "cases",
   patient: "status",
+  caregiver: "overview",
   research: "cohort",
 };
 
@@ -42,6 +44,7 @@ const navByRole = {
   radiologist: radiologistNav,
   physician: physicianNav,
   patient: patientNav,
+  caregiver: caregiverNav,
   research: researchNav,
 };
 
@@ -533,6 +536,7 @@ export default function App() {
     radiologist: cases.filter((item) => (item.mriStatus === "Received" || /quality review/i.test(item.radiologistStatus)) && /review pending|needs quality review/i.test(item.radiologistStatus)).length,
     physician: cases.filter((item) => /reviewed/i.test(item.radiologistStatus) && (!/physician reviewed/i.test(item.neurologistStatus) || /release approval pending|patient summary approved|ready for release|pdf pending/i.test(`${item.reportStatus} ${item.releaseStatus}`))).length,
     patient: 1,
+    caregiver: 1,
     research: cases.filter((item) => item.researchEligible && item.anonymizationStatus === "Anonymized").length,
   }), [cases]);
 
@@ -602,6 +606,7 @@ export default function App() {
       {role === "radiologist" ? <RadiologistPanel caseViews={radiologistCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleRadiologistAction} /> : null}
       {role === "physician" ? <PhysicianPanel caseViews={physicianCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handlePhysicianAction} /> : null}
       {role === "patient" ? <PatientPanel item={getPatientSafeView(cases.find((item) => item.id === "K-2041") ?? cases[0])} activeView={activeView} onAction={handlePatientAction} /> : null}
+      {role === "caregiver" ? <CaregiverPanel item={getPatientSafeView(cases.find((item) => item.id === "K-2041") ?? cases[0])} activeView={activeView} onAction={handlePatientAction} /> : null}
       {role === "research" ? <ResearchPanel cases={cases.map((item) => toResearchSafeCaseView(item, { role: "researcher", researchPurposeApproved: true }))} activeView={activeView} onAction={() => showToast("Anonymized CSV export placeholder generated.")} /> : null}
     </AppShell>
     </I18nProvider>
@@ -668,7 +673,7 @@ function RoleSelector({ counts, onSelect }: { counts: Record<RoleId, number>; on
             <button key={role} type="button" className={`role-card accent-${definition.accent}`} onClick={() => onSelect(role)}>
               <span className="role-icon">{tv(definition.shortLabel).slice(0, 2)}</span>
               <div><p>{tv(definition.shortLabel)}</p><h2>{tv(definition.label)}</h2><span>{tv(definition.purpose)}</span></div>
-              <div className="role-card-bottom"><strong>{formatNumber(counts[role])}</strong><span>{t(role === "patient" ? "active case" : role === "research" ? "eligible records" : "items needing attention")}</span><em>{t("Open workspace →")}</em></div>
+              <div className="role-card-bottom"><strong>{formatNumber(counts[role])}</strong><span>{t(role === "patient" || role === "caregiver" ? "active case" : role === "research" ? "eligible records" : "items needing attention")}</span><em>{t("Open workspace →")}</em></div>
             </button>
           );
         })}

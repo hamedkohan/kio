@@ -1573,11 +1573,18 @@ export const roleDefinitions = {
     accent: "indigo",
   },
   patient: {
-    label: "Patient / Caregiver Portal",
-    shortLabel: "Patient / Caregiver",
+    label: "Patient Portal",
+    shortLabel: "Patient",
     purpose: "Complete required actions, understand safe status, and access physician-approved released output.",
     permission: "Own safe status, forms, uploads, consent, and released output only.",
     accent: "sage",
+  },
+  caregiver: {
+    label: "Caregiver Portal",
+    shortLabel: "Caregiver",
+    purpose: "Support your family member: track safe status, help complete requested actions, and access brain-health guidance.",
+    permission: "Patient-safe status, requested actions, education, and released summary only.",
+    accent: "slate",
   },
   research: {
     label: "Research Workspace",

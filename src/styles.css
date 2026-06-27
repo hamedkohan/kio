@@ -931,6 +931,30 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 
+/* DK regional atrophy table + radiologist annotations */
+.dk-region-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.dk-region-table th { padding: .5rem .6rem; color: var(--muted); font-size: .62rem; font-weight: 820; text-transform: uppercase; letter-spacing: .03em; text-align: start; border-bottom: 1px solid var(--line); }
+.dk-region-table td { padding: .55rem .6rem; color: var(--ink); vertical-align: middle; border-bottom: 1px solid var(--line); }
+.dk-region-table tr:last-child td { border-bottom: 0; }
+.dk-row-annotated { background: rgba(220, 130, 60, .07); }
+.dk-pct { display: flex; align-items: center; gap: .5rem; }
+.dk-pct-bar { position: relative; flex: 1; min-width: 4rem; max-width: 9rem; height: .5rem; background: #e8eeec; border-radius: 999px; overflow: hidden; }
+.dk-pct-bar i { display: block; height: 100%; background: #8bb6a3; border-radius: 999px; }
+.dk-pct-bar i.mid { background: #e0aa4e; }
+.dk-pct-bar i.low { background: #b01e20; }
+.dk-pct small { color: var(--muted); font-weight: 700; }
+.dk-annot-btn { padding: .28rem .6rem; font-size: .68rem; font-weight: 750; color: var(--accent-dark); background: var(--accent-soft); border: 1px solid var(--line); border-radius: .5rem; cursor: pointer; white-space: nowrap; }
+.dk-annot-btn.active { color: #fff; background: #c1632a; border-color: #c1632a; }
+
+.annot-list { display: flex; flex-direction: column; gap: .55rem; margin: 0 0 .9rem; padding: 0; list-style: none; }
+.annot-item { position: relative; padding: .65rem .8rem; background: #fff; border: 1px solid var(--line); border-radius: .7rem; }
+.annot-main { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.annot-main strong { font-size: .85rem; color: var(--ink); }
+.annot-item p { margin: .3rem 0 0; color: var(--muted); font-size: .76rem; }
+.annot-remove { position: absolute; top: .5rem; inset-inline-end: .5rem; width: 1.5rem; height: 1.5rem; color: var(--muted); font-size: .8rem; background: var(--accent-soft); border: 0; border-radius: 50%; cursor: pointer; }
+.brain3d-annot-legend { position: absolute; inset-block-end: .6rem; inset-inline-start: .6rem; display: flex; align-items: center; gap: .35rem; padding: .25rem .5rem; color: #fff; font-size: .62rem; font-weight: 700; background: rgba(11,15,21,.66); border-radius: 999px; }
+.brain3d-annot-dot { width: .55rem; height: .55rem; background: #f08a3c; border-radius: 50%; box-shadow: 0 0 0 2px rgba(240,138,60,.35); }
+
 /* integrations & AI module registry */
 .integration-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .8rem; margin-bottom: 1rem; }
 .integration-card { display: flex; flex-direction: column; gap: .6rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .8rem; background: #fff; box-shadow: 0 4px 14px rgba(18,58,53,.04); }

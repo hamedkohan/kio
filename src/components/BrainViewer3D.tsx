@@ -5,15 +5,35 @@ import { PanelCard } from "./ui";
 
 type Status = "loading" | "ready" | "error";
 
+export type BrainMarker = { name: string; x: number; y: number; z: number; severity: string };
+
 // Real WebGL 3D mesh viewer (NiiVue). Rotatable/zoomable by mouse.
-// `meshUrl` defaults to a self-hosted sample so it always renders; the pipeline's
-// real cortical surface (and per-region atrophy values) will replace it via the API.
-export function BrainViewer3D({ meshUrl, hasRegionalMap = true, title = "3D brain", subtitle = "Rotatable cortical surface — drag to rotate, scroll to zoom" }: { meshUrl: string; hasRegionalMap?: boolean; title?: string; subtitle?: string }) {
+// Loads a per-case PLY (per-vertex Desikan-Killiany colour) and overlays optional
+// radiologist annotation markers (sphere nodes at region centroids) without
+// replacing the cortical surface.
+export function BrainViewer3D({
+  meshUrl,
+  hasRegionalMap = true,
+  markers = [],
+  parcellationSource = "approximate_demo",
+  title = "3D brain",
+  subtitle = "Rotatable cortical surface — drag to rotate, scroll to zoom",
+}: {
+  meshUrl: string;
+  hasRegionalMap?: boolean;
+  markers?: BrainMarker[];
+  parcellationSource?: string;
+  title?: string;
+  subtitle?: string;
+}) {
   const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const nvRef = useRef<Niivue | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const markerMeshRef = useRef<any>(null);
   const [status, setStatus] = useState<Status>("loading");
   const url = meshUrl;
+  const isReal = parcellationSource === "freesurfer_aparc";
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +49,7 @@ export function BrainViewer3D({ meshUrl, hasRegionalMap = true, title = "3D brai
         await nv.attachToCanvas(canvas);
         await nv.loadMeshes([{ url }]); // PLY carries per-vertex colours
         if (cancelled) return;
+        markerMeshRef.current = null;
         nv.setRenderAzimuthElevation(120, 15);
         nv.drawScene();
         setStatus("ready");
@@ -39,6 +60,49 @@ export function BrainViewer3D({ meshUrl, hasRegionalMap = true, title = "3D brai
 
     return () => { cancelled = true; };
   }, [url]);
+
+  // Overlay / refresh annotation markers as connectome node spheres on the surface.
+  useEffect(() => {
+    const nv = nvRef.current;
+    if (!nv || status !== "ready") return;
+    try {
+      if (markerMeshRef.current) {
+        nv.removeMesh(markerMeshRef.current);
+        markerMeshRef.current = null;
+      }
+      if (markers.length) {
+        const connectome = {
+          name: "annotations",
+          nodeColormap: "warm",
+          nodeColormapNegative: "winter",
+          nodeMinColor: 0,
+          nodeMaxColor: 1,
+          nodeScale: 1,
+          edgeColormap: "warm",
+          edgeColormapNegative: "winter",
+          edgeMin: 0,
+          edgeMax: 1,
+          edgeScale: 1,
+          nodes: markers.map((m) => ({
+            name: m.name,
+            x: m.x,
+            y: m.y,
+            z: m.z,
+            colorValue: m.severity === "marked" ? 1 : 0.5,
+            sizeValue: m.severity === "marked" ? 5 : 3.5,
+          })),
+          edges: [],
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mesh = nv.loadConnectomeAsMesh(connectome as any);
+        nv.addMesh(mesh);
+        markerMeshRef.current = mesh;
+      }
+      nv.drawScene();
+    } catch {
+      // Markers are best-effort; the annotation list is the source of truth.
+    }
+  }, [markers, status]);
 
   const resetView = () => {
     const nv = nvRef.current;
@@ -65,11 +129,16 @@ export function BrainViewer3D({ meshUrl, hasRegionalMap = true, title = "3D brai
           <small dir="ltr">0</small>
           <small dir="ltr">100</small>
         </div>
+        {markers.length ? (
+          <div className="brain3d-annot-legend"><i className="brain3d-annot-dot" />{t("Radiologist annotation")}</div>
+        ) : null}
       </div>
       <div className="ai-boundary">
-        <strong>{hasRegionalMap ? t("Real anatomical brain (fsaverage5)") : t("No regional map for this case")}</strong>
+        <strong>{hasRegionalMap ? t("Real cortical surface · Desikan-Killiany regions") : t("No regional map for this case")}</strong>
         <p>{hasRegionalMap
-          ? t("Real FreeSurfer cortical surface (NiiVue), shaded by curvature and coloured by lobe from THIS case's percentile data (red = low percentile / atrophied). Exact per-region (Desikan-Killiany) colouring and radiologist annotation will use the parcellation delivered with your pipeline mesh.")
+          ? (isReal
+            ? t("Real FreeSurfer cortical surface coloured per Desikan-Killiany region by THIS case's percentile (red = low percentile / atrophied), shaded by sulcal depth.")
+            : t("Real FreeSurfer cortical surface (fsaverage5) coloured per Desikan-Killiany region by THIS case's percentile (red = low percentile / atrophied). Region boundaries are an approximate DK parcellation for the demo; the real parcellation delivered with the pipeline mesh drops in unchanged."))
           : t("This case has no cortical volumetry/corticometry module, so the surface is shown in neutral grey. Cases with regional data are coloured by percentile.")}</p>
       </div>
     </PanelCard>

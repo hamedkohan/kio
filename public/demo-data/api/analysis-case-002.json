@@ -1,0 +1,399 @@
+{
+  "schema_version": "1.0",
+  "case_id": "case-002",
+  "study": {
+    "study_date": "2025-03-15",
+    "comparison_study_date": null,
+    "modality": "MRI",
+    "primary_module": "ai_volumetry_single"
+  },
+  "patient": {
+    "age_at_study": 78,
+    "sex": "F"
+  },
+  "qc": {
+    "status": "acceptable",
+    "motion": "within tolerance",
+    "coverage": "complete"
+  },
+  "mesh": {
+    "surface_url": "demo-data/mesh/brain-case-002.ply",
+    "centroids_url": "demo-data/mesh/region_centroids.json",
+    "parcellation": "desikan-killiany",
+    "parcellation_source": "approximate_demo",
+    "space": "fsaverage5"
+  },
+  "regions": [
+    {
+      "region": "superiortemporal",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "middletemporal",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "inferiortemporal",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "fusiform",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "parahippocampal",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "transversetemporal",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "insula",
+      "atlas": "desikan-killiany",
+      "percentile": 3.5,
+      "z_score": -2.32,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "entorhinal",
+      "atlas": "desikan-killiany",
+      "percentile": 22.8,
+      "z_score": -1.36,
+      "value": 1.6,
+      "unit": "cm3",
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "lateraloccipital",
+      "atlas": "desikan-killiany",
+      "percentile": 24.9,
+      "z_score": -1.26,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "lingual",
+      "atlas": "desikan-killiany",
+      "percentile": 24.9,
+      "z_score": -1.26,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "cuneus",
+      "atlas": "desikan-killiany",
+      "percentile": 24.9,
+      "z_score": -1.26,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "pericalcarine",
+      "atlas": "desikan-killiany",
+      "percentile": 24.9,
+      "z_score": -1.26,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "rostralanteriorcingulate",
+      "atlas": "desikan-killiany",
+      "percentile": 34.0,
+      "z_score": -0.8,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "caudalanteriorcingulate",
+      "atlas": "desikan-killiany",
+      "percentile": 34.0,
+      "z_score": -0.8,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "posteriorcingulate",
+      "atlas": "desikan-killiany",
+      "percentile": 34.0,
+      "z_score": -0.8,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "isthmuscingulate",
+      "atlas": "desikan-killiany",
+      "percentile": 34.0,
+      "z_score": -0.8,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "superiorfrontal",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "rostralmiddlefrontal",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "caudalmiddlefrontal",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "parsopercularis",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "parstriangularis",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "parsorbitalis",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "lateralorbitofrontal",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "medialorbitofrontal",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "precentral",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "paracentral",
+      "atlas": "desikan-killiany",
+      "percentile": 80.2,
+      "z_score": 1.51,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": false
+    },
+    {
+      "region": "postcentral",
+      "atlas": "desikan-killiany",
+      "percentile": 97.8,
+      "z_score": 2.39,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "superiorparietal",
+      "atlas": "desikan-killiany",
+      "percentile": 97.8,
+      "z_score": 2.39,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "inferiorparietal",
+      "atlas": "desikan-killiany",
+      "percentile": 97.8,
+      "z_score": 2.39,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "supramarginal",
+      "atlas": "desikan-killiany",
+      "percentile": 97.8,
+      "z_score": 2.39,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    },
+    {
+      "region": "precuneus",
+      "atlas": "desikan-killiany",
+      "percentile": 97.8,
+      "z_score": 2.39,
+      "value": null,
+      "unit": null,
+      "previous_value": null,
+      "change_percent": null,
+      "flagged": true
+    }
+  ],
+  "annotations": [
+    {
+      "region": "superiortemporal",
+      "hemisphere": "total",
+      "severity": "mild",
+      "note": "Low normative percentile — review for atrophy.",
+      "author_role": "radiologist",
+      "status": "suggested"
+    },
+    {
+      "region": "middletemporal",
+      "hemisphere": "total",
+      "severity": "mild",
+      "note": "Low normative percentile — review for atrophy.",
+      "author_role": "radiologist",
+      "status": "suggested"
+    },
+    {
+      "region": "inferiortemporal",
+      "hemisphere": "total",
+      "severity": "mild",
+      "note": "Low normative percentile — review for atrophy.",
+      "author_role": "radiologist",
+      "status": "suggested"
+    }
+  ],
+  "provenance": {
+    "pipeline": "NeuroTrack morphometry (mock)",
+    "generated_by": "scripts/generate_brain_meshes.py"
+  }
+}

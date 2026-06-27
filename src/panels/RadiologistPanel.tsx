@@ -5,7 +5,7 @@ import { LongitudinalPanel, QuantitativeMetricsPanel, VisualScoresPanel } from "
 import { CentileCurvesSection } from "../components/CentileCurves";
 import { CaseContextBar } from "../components/CaseContextBar";
 import { getDemoCaseDetail, getDemoCaseSummaries, getKeyMetrics, isOutlierMetric, sortMetricsForReview } from "../data/kio-demo/repository";
-import { BrainViewer3D } from "../components/BrainViewer3D";
+import { ImagingAtrophySection } from "../components/ImagingAtrophySection";
 import type { DemoCaseDetail, DemoCaseSummary, DemoQuantitativeMetric } from "../data/kio-demo/types";
 import type { RadiologistCaseReviewView } from "../domain";
 
@@ -356,9 +356,6 @@ function OutlierPanel({ detail, includePrevious = false }: { detail: DemoCaseDet
 
 function ImageAnnotationTab({ detail }: { detail: DemoCaseDetail }) {
   const { t } = useI18n();
-  const brainUrl = `${import.meta.env.BASE_URL}demo-data/mesh/brain-${detail.caseRecord.case_id}.ply`;
-  const lobes = ["Frontal", "Parietal", "Temporal", "Occipital", "Cingulate"];
-  const hasRegionalMap = detail.metrics.some((metric) => lobes.includes(metric.structure) && metric.hemisphere === "total" && metric.percentile !== null && metric.percentile !== undefined);
   return (
     <>
       <PanelCard title="Image / annotation context" subtitle="No diagnostic DICOM viewer exists in this prototype">
@@ -368,7 +365,7 @@ function ImageAnnotationTab({ detail }: { detail: DemoCaseDetail }) {
         </div>
         <p className="context-copy">{t("Diagnostic imaging will be available through the platform viewer / API. Structured data is the source of truth.")}</p>
       </PanelCard>
-      <BrainViewer3D key={brainUrl} meshUrl={brainUrl} hasRegionalMap={hasRegionalMap} title="3D atrophy brain" subtitle="Rotatable cortical surface — coloured by the selected case · drag to rotate, scroll to zoom" />
+      <ImagingAtrophySection caseId={detail.caseRecord.case_id} editable />
     </>
   );
 }

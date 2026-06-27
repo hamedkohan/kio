@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "case_id": "case-001",
+  "study": {
+    "study_date": "2024-11-26",
+    "comparison_study_date": null,
+    "modality": "MRI",
+    "primary_module": "visual_mri_dementia_protocol"
+  },
+  "patient": {
+    "age_at_study": 79,
+    "sex": "F"
+  },
+  "qc": {
+    "status": "acceptable",
+    "motion": "within tolerance",
+    "coverage": "complete"
+  },
+  "mesh": {
+    "surface_url": "demo-data/mesh/brain-case-001.ply",
+    "centroids_url": "demo-data/mesh/region_centroids.json",
+    "parcellation": "desikan-killiany",
+    "parcellation_source": "approximate_demo",
+    "space": "fsaverage5"
+  },
+  "regions": [],
+  "annotations": [],
+  "provenance": {
+    "pipeline": "NeuroTrack morphometry (mock)",
+    "generated_by": "scripts/generate_brain_meshes.py"
+  }
+}

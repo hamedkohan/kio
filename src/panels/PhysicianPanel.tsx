@@ -3,6 +3,7 @@ import { useI18n } from "../i18n";
 import type { KioCase } from "../types";
 import { CaseIdentity, CaseLifecycleStrip, EmptyState, EvidenceProvenanceStrip, EvidenceSection, InteractiveReportPreview, PageHeader, PanelCard, PercentileBar, ReportReadinessChecklist, ReportWorkspaceShell, StatusChip, SuppressedEvidenceNotice, Timeline, WorkflowReadinessPanel, WorkspaceHero } from "../components/ui";
 import { CaseJourney } from "../components/CaseJourney";
+import { ImagingEvidence } from "../components/ImagingEvidence";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
 import type { PhysicianBiomarkerEvidenceView, PhysicianCaseReviewView } from "../domain";
 
@@ -73,6 +74,7 @@ export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelect
       </PanelCard>
       <StructuredVisualSummaryCard view={selectedView} />
       <PhysicianEvidenceTable evidence={selectedEvidence} />
+      <ImagingEvidence />
     </>
   );
 

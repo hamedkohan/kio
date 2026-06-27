@@ -839,6 +839,7 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .cj-compact-meta { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
 .cj-compact-meta strong { font-size: .8rem; color: var(--ink); }
 .cj-compact-meta span { font-size: .72rem; color: var(--muted); }
+.cj-consent-note { margin: 0; padding: .4rem .6rem; background: #fef2f2; border-inline-start: 3px solid #dc2626; border-radius: .4rem; color: #991b1b; font-size: .72rem; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

@@ -226,7 +226,7 @@ export function OperationsPanel({ caseViews, activeView, selectedCaseId, onSelec
           </div>
         }
       >
-        <CaseJourney caseRecord={selected} />
+        <CaseJourney caseRecord={selected} consentStatus={selected.consentStatus} />
       </PanelCard>
       <OperationsReportPipeline item={selected} />
       <DemoReportWorkspace role="operations" title="Structured legacy-report demo cases" />

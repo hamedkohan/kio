@@ -45,9 +45,10 @@ export function MobileAppShell({
   return (
     <div className={`mobile-stage accent-${definition.accent}`} lang={locale} dir={dir}>
       <div className="phone-frame">
+        <div className="phone-notch" aria-hidden="true" />
         <div className="phone-statusbar">
-          <span>9:41</span>
-          <span className="phone-statusbar-icons"><i /><i /><i className="battery" /></span>
+          <span className="phone-time">9:41</span>
+          <span className="phone-statusbar-icons"><i className="sig" /><i className="wifi" /><i className="battery" /></span>
         </div>
 
         <header className="phone-appbar">

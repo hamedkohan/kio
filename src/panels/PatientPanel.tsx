@@ -1,6 +1,5 @@
 import { useI18n } from "../i18n";
 import { EvidenceLayerTabs, InteractiveReportPreview, PageHeader, PanelCard, ProgressBar, ReportReadinessChecklist, StatusChip, Timeline, WorkspaceHero } from "../components/ui";
-import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
 import type { PatientSafeCaseView } from "../selectors/visibility";
 
 type Props = {
@@ -114,7 +113,6 @@ export function PatientPanel({ item, activeView, onAction }: Props) {
           <div className="safe-note"><strong>{t("Still under review")}</strong><p>{t("Your care team is reviewing your imaging results. Technical AI outputs and draft clinical notes are not shown here.")}</p></div>
         </PanelCard>
       )}
-      <DemoReportWorkspace role="patient" title="Patient-safe imported report experience" />
       <div className="split-layout">
         <PanelCard title="Your case timeline" subtitle="Only safe, approved milestones are shown"><Timeline events={item.timeline} patientSafe /></PanelCard>
         <PanelCard title="Helpful actions"><div className="patient-actions"><button onClick={() => onAction("complete-form", item.id)}><strong>{t("Review your information")}</strong><span>{t("Check forms and requested details")}</span></button><button onClick={() => onAction("patient-upload", item.id)}><strong>{t("View uploads")}</strong><span>{t("See MRI and document receipt status · placeholder receipt")}</span></button><button onClick={() => onAction("support", item.id)}><strong>{t("Contact support")}</strong><span>{t("Prototype placeholder for upload or required-action help")}</span></button></div></PanelCard>

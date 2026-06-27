@@ -26,6 +26,7 @@ import { PhysicianPanel, physicianNav } from "./panels/PhysicianPanel";
 import { PatientPanel, patientNav } from "./panels/PatientPanel";
 import { ResearchPanel, researchNav } from "./panels/ResearchPanel";
 import { applyPatientReleaseAction, applyPublicationApprovalAction, canPerformCaseAction, getLatestPatientReleasePackageForCase, getLatestPublicationApprovalForCase, getOperationsCaseCoordinationViews, getPatientPortalReleaseView, getPhysicianCaseReviewView, getRadiologistCaseReviewView, getReleaseSafetyCheckForPackage, guardCaseAction, guardCaseActionSequence, guardCreateCase, withDerivedCaseFields, type CaseAction, type ClinicalEvidenceCollections, type GuardedCaseActionContext, type GuardedTransitionResult } from "./domain";
+import { getNextPossibleStates } from "./domain/caseStateSelectors";
 import { toPatientSafeCaseView, toResearchSafeCaseView } from "./selectors/visibility";
 
 const defaultViews: Record<RoleId, string> = {
@@ -236,6 +237,20 @@ export default function App() {
       return;
     }
     if (!caseId) return;
+    if (action === "advance-demo") {
+      updateCase(caseId, (item) => {
+        const next = getNextPossibleStates(item)[0];
+        if (!next) return item;
+        return addTimeline({ ...item, state: next, stateEnteredAt: "Now" }, "Advanced (demo)", `Case moved to ${next}`);
+      });
+      showToast("Demo case advanced to the next lifecycle state.");
+      return;
+    }
+    if (action === "reset-demo") {
+      updateCase(caseId, (item) => addTimeline({ ...item, state: "CASE_CREATED", stateEnteredAt: "Now" }, "Reset (demo)", "Case returned to Case Created"));
+      showToast("Demo case reset to the start of the journey.");
+      return;
+    }
     if (action === "receive-mri") {
       const result = applyPermittedDomainTransition(cases.find((item) => item.id === caseId), "RECEIVE_MRI", {
         role: "operations",

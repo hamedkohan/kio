@@ -216,7 +216,16 @@ export function OperationsPanel({ caseViews, activeView, selectedCaseId, onSelec
         ]}
         action={<button className="primary-button" onClick={() => setCreateOpen(true)}>{t("Create Case")}</button>}
       />
-      <PanelCard title="Case journey" subtitle="Canonical end-to-end lifecycle for the selected case">
+      <PanelCard
+        title="Case journey"
+        subtitle="Canonical end-to-end lifecycle for the selected case"
+        action={
+          <div className="button-row">
+            <button className="secondary-button" onClick={() => onAction("reset-demo", selected.id)}>{t("Reset")}</button>
+            <button className="primary-button" onClick={() => onAction("advance-demo", selected.id)}>{t("Advance demo case →")}</button>
+          </div>
+        }
+      >
         <CaseJourney caseRecord={selected} />
       </PanelCard>
       <OperationsReportPipeline item={selected} />

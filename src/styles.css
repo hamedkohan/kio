@@ -840,6 +840,52 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .cj-compact-meta strong { font-size: .8rem; color: var(--ink); }
 .cj-compact-meta span { font-size: .72rem; color: var(--muted); }
 .cj-consent-note { margin: 0; padding: .4rem .6rem; background: #fef2f2; border-inline-start: 3px solid #dc2626; border-radius: .4rem; color: #991b1b; font-size: .72rem; }
+
+/* ===== Mobile app-like shell (Patient & Caregiver) ===== */
+.mobile-stage { min-height: 100vh; display: grid; place-items: center; padding: clamp(0px, 3vw, 2rem); background: radial-gradient(circle at 30% 15%, #1d3040, #0a111c); }
+.phone-frame { position: relative; display: flex; flex-direction: column; width: 100%; max-width: 26.5rem; height: min(94vh, 900px); background: #f4f8f7; border: 1px solid rgba(255,255,255,.08); border-radius: 2.3rem; box-shadow: 0 36px 90px rgba(0,0,0,.5); overflow: hidden; }
+.phone-statusbar { display: flex; align-items: center; justify-content: space-between; padding: .55rem 1.4rem .25rem; font-size: .72rem; font-weight: 800; color: var(--ink); background: #fff; }
+.phone-statusbar-icons { display: inline-flex; gap: .25rem; align-items: center; }
+.phone-statusbar-icons i { width: .42rem; height: .42rem; border-radius: 1px; background: var(--ink); }
+.phone-statusbar-icons i.battery { width: 1.15rem; height: .58rem; border-radius: 2px; }
+.phone-appbar { display: flex; align-items: center; gap: .55rem; padding: .35rem .8rem .55rem; background: #fff; border-bottom: 1px solid var(--line); }
+.phone-back { flex: none; width: 2rem; height: 2rem; font-size: 1.5rem; line-height: 1; color: var(--accent-dark); background: var(--accent-soft); border: 0; border-radius: 50%; cursor: pointer; }
+.phone-appbar-title { flex: 1; min-width: 0; }
+.phone-appbar-title strong { display: block; font-size: .92rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phone-appbar-title small { color: var(--muted); font-size: .64rem; }
+.phone-bell { position: relative; flex: none; width: 2.1rem; height: 2.1rem; font-size: 1rem; background: var(--accent-soft); border: 0; border-radius: 50%; cursor: pointer; }
+.phone-bell em { position: absolute; top: -.15rem; inset-inline-end: -.15rem; min-width: 1.05rem; height: 1.05rem; padding: 0 .2rem; font-size: .58rem; font-style: normal; font-weight: 800; color: #fff; background: #dc2626; border-radius: 999px; display: grid; place-items: center; }
+.phone-langtoggle { display: flex; gap: .3rem; justify-content: flex-end; padding: .4rem .85rem 0; background: #fff; }
+.phone-langtoggle button { padding: .12rem .55rem; font-size: .68rem; font-weight: 800; color: var(--muted); background: var(--accent-soft); border: 0; border-radius: 999px; cursor: pointer; }
+.phone-langtoggle button.active { color: #fff; background: var(--accent); }
+.phone-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .9rem .85rem 1.2rem; background: #f4f8f7; }
+.phone-tabbar { display: flex; background: #fff; border-top: 1px solid var(--line); padding: .35rem .25rem calc(.4rem + env(safe-area-inset-bottom, 0px)); }
+.phone-tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .12rem; padding: .35rem .1rem; background: transparent; border: 0; color: var(--muted); cursor: pointer; }
+.phone-tab-icon { font-size: 1.15rem; line-height: 1; filter: grayscale(.4); opacity: .7; }
+.phone-tab-label { font-size: .56rem; font-weight: 800; }
+.phone-tabbar button.active { color: var(--accent-dark); }
+.phone-tabbar button.active .phone-tab-icon { filter: none; opacity: 1; }
+.phone-toast { position: absolute; left: 50%; bottom: 5rem; transform: translateX(-50%); max-width: 88%; padding: .55rem .9rem; background: rgba(15,23,42,.93); color: #fff; font-size: .74rem; border-radius: .7rem; text-align: center; z-index: 6; }
+.phone-sheet-backdrop { position: absolute; inset: 0; z-index: 5; background: rgba(15,23,42,.42); display: flex; align-items: flex-end; }
+.phone-sheet { width: 100%; max-height: 72%; overflow-y: auto; padding: .6rem 1rem 1.3rem; background: #fff; border-radius: 1.3rem 1.3rem 0 0; box-shadow: 0 -12px 44px rgba(0,0,0,.28); }
+.phone-sheet-handle { width: 2.4rem; height: .28rem; margin: 0 auto .6rem; background: var(--line); border-radius: 999px; }
+.phone-sheet h3 { margin: 0 0 .6rem; font-size: .95rem; color: var(--ink); }
+.phone-notif-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.phone-notif-list li { padding: .55rem .65rem; background: var(--accent-soft); border-radius: .65rem; }
+.phone-notif-list strong { font-size: .8rem; color: var(--ink); }
+.phone-notif-list p { margin: .12rem 0; font-size: .72rem; color: var(--muted); }
+.phone-notif-list small { font-size: .62rem; color: var(--muted); }
+.phone-notif-empty { color: var(--muted); font-size: .78rem; }
+.phone-notif-note { margin-top: .7rem; color: var(--muted); font-size: .64rem; }
+/* stack existing panel content app-like inside the phone */
+.phone-content .page-header { flex-direction: column; gap: .35rem; margin-bottom: .9rem; }
+.phone-content .page-header h1 { font-size: 1.3rem; }
+.phone-content .card-grid, .phone-content .card-grid.two, .phone-content .card-grid.three, .phone-content .split-layout, .phone-content .metric-grid, .phone-content .patient-metrics, .phone-content .demo-workspace-grid, .phone-content .longitudinal-card-grid, .phone-content .centile-grid, .phone-content .workspace-hero-stats { grid-template-columns: 1fr; }
+.phone-content .patient-status-card { grid-template-columns: 1fr; }
+.phone-content .workspace-hero { padding: 1.1rem; }
+.phone-content .workspace-hero-copy h1 { font-size: 1.35rem; }
+.phone-content .panel-card { margin-bottom: .8rem; }
+.phone-content .patient-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

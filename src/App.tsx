@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "./components/AppShell";
+import { MobileAppShell } from "./components/MobileAppShell";
 import {
   aiProcessingJobs,
   biomarkerOutputs,
@@ -598,17 +599,40 @@ export default function App() {
 
   const activeView = activeViews[role];
   const setView = (view: string) => setActiveViews((current) => ({ ...current, [role]: view }));
+  const navItems = navByRole[role].map((item) => ({ ...item, count: item.id === defaultViews[role] ? roleCounts[role] : undefined }));
+  const goRoleHome = () => { setRole(null); normalizeRoute(locale, null, false); };
 
-  return (
-    <I18nProvider locale={locale} setLocale={switchLocale}>
-    <AppShell role={role} activeView={activeView} navItems={navByRole[role].map((item) => ({ ...item, count: item.id === defaultViews[role] ? roleCounts[role] : undefined }))} onNavigate={setView} onRoleHome={() => { setRole(null); normalizeRoute(locale, null, false); }} toast={toast}>
+  const patientSafeView = getPatientSafeView(cases.find((item) => item.id === "K-2041") ?? cases[0]);
+  const patientNotifications = patientSafeView.timeline
+    .filter((event) => event.patientSafe)
+    .slice(-6)
+    .reverse()
+    .map((event) => ({ title: event.label, detail: event.detail, when: event.date }));
+
+  const shellChildren = (
+    <>
       {role === "operations" ? <OperationsPanel caseViews={operationsCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleOperationsAction} onCreateCase={createCaseShell} /> : null}
       {role === "radiologist" ? <RadiologistPanel caseViews={radiologistCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleRadiologistAction} /> : null}
       {role === "physician" ? <PhysicianPanel caseViews={physicianCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handlePhysicianAction} /> : null}
-      {role === "patient" ? <PatientPanel item={getPatientSafeView(cases.find((item) => item.id === "K-2041") ?? cases[0])} activeView={activeView} onAction={handlePatientAction} /> : null}
-      {role === "caregiver" ? <CaregiverPanel item={getPatientSafeView(cases.find((item) => item.id === "K-2041") ?? cases[0])} activeView={activeView} onAction={handlePatientAction} /> : null}
+      {role === "patient" ? <PatientPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} /> : null}
+      {role === "caregiver" ? <CaregiverPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} /> : null}
       {role === "research" ? <ResearchPanel cases={cases.map((item) => toResearchSafeCaseView(item, { role: "researcher", researchPurposeApproved: true }))} activeView={activeView} onAction={() => showToast("Anonymized CSV export placeholder generated.")} /> : null}
-    </AppShell>
+    </>
+  );
+
+  const isAppLike = role === "patient" || role === "caregiver";
+
+  return (
+    <I18nProvider locale={locale} setLocale={switchLocale}>
+      {isAppLike ? (
+        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} toast={toast} notifications={patientNotifications}>
+          {shellChildren}
+        </MobileAppShell>
+      ) : (
+        <AppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} toast={toast}>
+          {shellChildren}
+        </AppShell>
+      )}
     </I18nProvider>
   );
 }

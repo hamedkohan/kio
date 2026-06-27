@@ -13,6 +13,23 @@ Switching to a real backend is configuration only — no code change. The mock
 files are produced by `scripts/generate_brain_meshes.py` from the same data, so
 the demo and a real deployment exercise the identical shape.
 
+## Running against a real backend (reference server)
+
+A runnable reference implementation of the contract lives in
+`server/imaging-analysis-server.mjs` (no dependencies):
+
+```bash
+npm run serve:api            # listens on :8787, serves the contract routes
+# then run the app in http mode against it:
+VITE_IMAGING_API_MODE=http VITE_IMAGING_API_BASE=http://localhost:8787 npm run dev
+```
+
+It exposes `/health`, `/cases`, `/cases/:id/imaging-analysis`, and the mesh
+assets, with CORS enabled. A production backend swaps the file reads for a
+DB/pipeline source; routes and shape are unchanged. (The GitHub Pages demo is a
+static host, so it stays in `mock` mode — this server is for real/local
+deployments.)
+
 ## Endpoint
 
 ```
@@ -78,8 +95,22 @@ GET {BASE}/cases/{caseId}/imaging-analysis  ->  ImagingAnalysisResponse
   used to place annotation marker spheres on the surface.
 - `parcellation_source` tells the UI whether boundaries are the **real**
   FreeSurfer `aparc.annot` (`freesurfer_aparc`) or the **approximate** demo
-  parcellation (`approximate_demo`). Drop a real `lh/rh.aparc.annot` next to
-  `scripts/generate_brain_meshes.py` and re-run to switch with no code change.
+  parcellation (`approximate_demo`). To switch to the official atlas:
+  ```bash
+  bash scripts/fetch_aparc_annot.sh   # copies fsaverage5 lh/rh.aparc.annot from $FREESURFER_HOME (or URLs)
+  npm run gen:meshes                  # regenerates meshes + JSON from the real atlas
+  ```
+  No code change — the generator detects the annot and flips
+  `parcellation_source` to `freesurfer_aparc`.
+
+## AI orchestration
+
+AI is a registry of pluggable modules (`src/data/integrations.ts`) executed by a
+runtime (`src/domain/aiOrchestration.ts`). Active modules run a handler over the
+analysis; planned modules are skipped registry slots; AI validation gates
+downstream modules. A real pipeline replaces a handler body without changing the
+orchestration contract. Surfaced in **Operations → Integrations & AI → AI
+orchestration runtime**.
 
 ## Visibility
 

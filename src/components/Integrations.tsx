@@ -10,6 +10,7 @@ import {
 import { useI18n } from "../i18n";
 import { PageHeader, PanelCard, StatusChip } from "./ui";
 import { PHASE_LABELS, PHASE_ORDER } from "./CaseJourney";
+import { AiOrchestrationPanel } from "./AiOrchestrationPanel";
 
 type IntegrationsRecord = { state: string; caseCode?: string; patientDisplayName?: string };
 
@@ -112,6 +113,8 @@ export function Integrations({ caseRecord }: { caseRecord?: IntegrationsRecord }
           <p>{t("Active modules run in the current demo. Planned modules are registry slots that can be enabled without changing the journey. AI output is decision support and is always validated by a clinician before release.")}</p>
         </div>
       </PanelCard>
+
+      <AiOrchestrationPanel />
     </>
   );
 }

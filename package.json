@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve:api": "node server/imaging-analysis-server.mjs",
+    "gen:meshes": "python3 scripts/generate_brain_meshes.py"
   },
   "dependencies": {
     "@fontsource/vazirmatn": "^5.2.8",

@@ -64,10 +64,10 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .selector-header h1 { margin-bottom: 0.8rem; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -0.045em; }
 .selector-header > p:last-child { max-width: 45rem; margin: auto; color: var(--muted); font-size: 1.03rem; line-height: 1.65; }
-.role-grid { display: grid; grid-template-columns: repeat(5, minmax(12rem, 1fr)); gap: 1rem; max-width: 100rem; margin: auto; }
+.role-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; max-width: 66rem; margin: auto; }
 .role-card {
   display: flex;
-  min-height: 23rem;
+  min-height: 12.5rem;
   padding: 1.25rem;
   text-align: start;
   flex-direction: column;
@@ -92,8 +92,8 @@ h1, h2, h3, p { margin-top: 0; }
   border: 1px solid color-mix(in srgb, var(--accent) 30%, white);
   border-radius: 0.75rem;
 }
-.role-card p { margin: 1.6rem 0 0.35rem; color: var(--accent); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-.role-card h2 { margin-bottom: 0.7rem; font-size: 1.15rem; line-height: 1.25; }
+.role-card p { margin: 0.9rem 0 0.3rem; color: var(--accent); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+.role-card h2 { margin-bottom: 0.45rem; font-size: 1.15rem; line-height: 1.25; }
 .role-card div > span { color: var(--muted); font-size: 0.84rem; line-height: 1.55; }
 .role-card-bottom { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.65rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .role-card-bottom strong { grid-row: span 2; color: var(--accent-dark); font-size: 1.8rem; }
@@ -1230,30 +1230,24 @@ input:focus-visible {
 
 .role-card {
   position: relative;
-  min-height: 24.5rem;
+  min-height: 12.5rem;
   padding: 1.35rem;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.91)),
-    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 16rem);
+  background: #fff;
   border-color: rgba(197, 213, 208, 0.82);
-  border-radius: var(--kio-radius-xl);
-  box-shadow: var(--kio-shadow-sm);
+  border-radius: var(--kio-radius-lg);
+  box-shadow: none;
 }
 
 .role-card::before {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 18%, transparent));
-  content: "";
+  content: none;
 }
 
 .role-card:hover,
 .role-card:focus-visible {
-  transform: translateY(-5px);
+  transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
-  box-shadow: var(--kio-shadow-lg);
+  box-shadow: var(--kio-shadow-sm);
 }
 
 .role-icon,

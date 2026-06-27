@@ -886,6 +886,16 @@ tbody tr:hover, .selected-row { background: #f6faf8; }
 .phone-content .workspace-hero-copy h1 { font-size: 1.35rem; }
 .phone-content .panel-card { margin-bottom: .8rem; }
 .phone-content .patient-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+
+/* follow-up & longitudinal program */
+.program-pillars { display: grid; gap: .7rem; }
+.program-pillar-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .25rem; }
+.program-pillar-head strong { font-size: .82rem; color: var(--ink); }
+.program-pillar-head span { font-size: .74rem; font-weight: 800; color: var(--accent-dark); }
+.followup-schedule { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .7rem; }
+.followup-schedule article { display: flex; flex-direction: column; gap: .25rem; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; }
+.followup-schedule article > span { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; color: var(--accent); }
+.followup-schedule article strong { font-size: .82rem; color: var(--ink); }
 .tag-list { display: flex; flex-wrap: wrap; gap: .4rem; }
 .tag-list span { padding: .38rem .55rem; color: #536165; font-size: .66rem; background: #edf2f1; border-radius: .4rem; }
 

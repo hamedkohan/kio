@@ -4,6 +4,7 @@ import type { KioCase } from "../types";
 import { CaseIdentity, CaseLifecycleStrip, EmptyState, EvidenceProvenanceStrip, EvidenceSection, InteractiveReportPreview, PageHeader, PanelCard, PercentileBar, ReportReadinessChecklist, ReportWorkspaceShell, StatusChip, SuppressedEvidenceNotice, Timeline, WorkflowReadinessPanel, WorkspaceHero } from "../components/ui";
 import { CaseJourney } from "../components/CaseJourney";
 import { ImagingEvidence } from "../components/ImagingEvidence";
+import { LongitudinalProgram } from "../components/LongitudinalProgram";
 import { CaseContextBar } from "../components/CaseContextBar";
 import { getDemoCaseDetail, getDemoCaseSummaries } from "../data/kio-demo/repository";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
@@ -23,6 +24,7 @@ export const physicianNav = [
   { id: "imaging", label: "Imaging Summary" },
   { id: "intake", label: "Cognitive Intake" },
   { id: "timeline", label: "Timeline" },
+  { id: "longitudinal", label: "Follow-up & Longitudinal" },
   { id: "notes", label: "Decision Notes" },
   { id: "reports", label: "Final Reports" },
 ];
@@ -96,6 +98,14 @@ export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelect
     <>
       <PageHeader eyebrow={`${selected.id} · longitudinal context`} title="Timeline" description="Clinical and review events, with prior comparison context when available." />
       <div className="split-layout"><PanelCard title="Case timeline"><Timeline events={selected.timeline} /></PanelCard><PanelCard title="Prior MRI comparison">{selected.longitudinal ? <div className="trend-placeholder"><strong>{t("Two-time comparison available")}</strong><div className="trend-line"><span /><span /><span /><span /></div><p>{t("Reviewed comparison indicates stable imaging-derived measures. Clinical meaning remains physician-owned.")}</p></div> : <EmptyState title="No prior MRI available" message="Continue single-timepoint clinical review or request prior imaging if needed." />}</PanelCard></div>
+    </>
+  );
+
+  if (activeView === "longitudinal") return (
+    <>
+      <PageHeader eyebrow={`${selected.id} · long-term care`} title="Follow-up & Longitudinal" description="Longitudinal imaging monitoring and a brain-health program for long-term engagement, prevention, and follow-up." />
+      {demoDetail ? <CaseContextBar summaries={demoSummaries} detail={demoDetail} selectedCaseId={demoCaseId} onSelectCase={setDemoCaseId} /> : null}
+      <LongitudinalProgram caseId={demoCaseId} />
     </>
   );
 

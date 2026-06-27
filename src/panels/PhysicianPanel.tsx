@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "../i18n";
 import type { KioCase } from "../types";
 import { CaseIdentity, CaseLifecycleStrip, EmptyState, EvidenceProvenanceStrip, EvidenceSection, InteractiveReportPreview, PageHeader, PanelCard, PercentileBar, ReportReadinessChecklist, ReportWorkspaceShell, StatusChip, SuppressedEvidenceNotice, Timeline, WorkflowReadinessPanel, WorkspaceHero } from "../components/ui";
+import { CaseJourney } from "../components/CaseJourney";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
 import type { PhysicianBiomarkerEvidenceView, PhysicianCaseReviewView } from "../domain";
 
@@ -55,6 +56,7 @@ export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelect
           { label: "Completed", value: completed.length, detail: "Read-only clinical output", tone: "good" },
         ]}
       />
+      <PanelCard title="Case journey" subtitle="Where the selected case sits in the end-to-end flow"><CaseJourney caseRecord={selected} compact /></PanelCard>
       <WorklistGroup title="Ready for Physician Review" subtitle="Radiologist-reviewed cases awaiting clinical interpretation" items={readyForReview} selectedId={selected.id} onSelectCase={onSelectCase} empty="No ready cases." />
       <WorklistGroup title="Report Finalization Pending" subtitle="Interpretation drafted or in progress, not finalized" items={finalizationPending} selectedId={selected.id} onSelectCase={onSelectCase} empty="No draft interpretations waiting for finalization." />
       <WorklistGroup title="Release Approval Pending" subtitle="Finalized output awaiting patient-safe summary or PDF approval" items={releasePending} selectedId={selected.id} onSelectCase={onSelectCase} empty="No release approvals pending." />

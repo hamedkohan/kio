@@ -3,6 +3,7 @@ import { useI18n } from "../i18n";
 import type { CreateCaseFormValues } from "../types";
 import { ActionCluster, CaseBlockerList, CaseWorkflowSummary, EmptyState, EvidenceSection, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip, Timeline, WorkflowReadinessPanel, WorkspaceHero } from "../components/ui";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
+import { CaseJourney } from "../components/CaseJourney";
 import type { OperationsCaseCoordinationView } from "../domain";
 
 type Props = {
@@ -215,6 +216,9 @@ export function OperationsPanel({ caseViews, activeView, selectedCaseId, onSelec
         ]}
         action={<button className="primary-button" onClick={() => setCreateOpen(true)}>{t("Create Case")}</button>}
       />
+      <PanelCard title="Case journey" subtitle="Canonical end-to-end lifecycle for the selected case">
+        <CaseJourney caseRecord={selected} />
+      </PanelCard>
       <OperationsReportPipeline item={selected} />
       <DemoReportWorkspace role="operations" title="Structured legacy-report demo cases" />
       <PanelCard

@@ -4,6 +4,7 @@ import type { CreateCaseFormValues } from "../types";
 import { ActionCluster, CaseBlockerList, CaseWorkflowSummary, EmptyState, EvidenceSection, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip, Timeline, WorkflowReadinessPanel, WorkspaceHero } from "../components/ui";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
 import { CaseJourney } from "../components/CaseJourney";
+import { Integrations } from "../components/Integrations";
 import type { OperationsCaseCoordinationView } from "../domain";
 
 type Props = {
@@ -22,6 +23,7 @@ export const operationsNav = [
   { id: "issues", label: "Blockers & Actions" },
   { id: "reports", label: "Reports & Release" },
   { id: "followups", label: "Follow-up Coordination" },
+  { id: "integrations", label: "Integrations & AI" },
 ];
 
 const defaultCreateCaseValues: CreateCaseFormValues = {
@@ -158,6 +160,13 @@ export function OperationsPanel({ caseViews, activeView, selectedCaseId, onSelec
     <>
       <PageHeader eyebrow="Release administration" title="Reports & Release" description="Only finalized, approved, or released output status is visible here; clinical interpretation remains hidden." />
       {reports.length ? <PanelCard title="Approved output">{caseTable(reports)}</PanelCard> : <EmptyState title="No reports ready" message="Approved reports will appear after clinical finalization and release approval." />}
+      {detailDrawer}
+    </>
+  );
+
+  if (activeView === "integrations") return (
+    <>
+      <Integrations caseRecord={selected} />
       {detailDrawer}
     </>
   );

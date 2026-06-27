@@ -4,7 +4,7 @@ import { useI18n } from "../i18n";
 import { StatusChip } from "./ui";
 
 // Ordered phases of the canonical case lifecycle (src/domain/caseState.ts CasePhase).
-const PHASE_ORDER: CasePhase[] = [
+export const PHASE_ORDER: CasePhase[] = [
   "case_initiation",
   "mri_intake",
   "imaging_readiness",
@@ -17,7 +17,7 @@ const PHASE_ORDER: CasePhase[] = [
   "research",
 ];
 
-const PHASE_LABELS: Record<CasePhase, string> = {
+export const PHASE_LABELS: Record<CasePhase, string> = {
   case_initiation: "Intake",
   mri_intake: "MRI Intake",
   imaging_readiness: "Imaging QC",

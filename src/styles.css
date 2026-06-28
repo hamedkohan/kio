@@ -3930,3 +3930,75 @@ html[dir="rtl"] .demo-case-id {
 .role-open { margin-top: auto; color: var(--accent); font-size: .8rem; font-weight: 800; font-style: normal; }
 .selector-footer { margin: clamp(1rem, 2.5vh, 1.75rem) auto 0; gap: .5rem; }
 .selector-footer span { font-size: .68rem; padding: .3rem .65rem; }
+
+/* ============================================================
+   High-end refinement layer — "Clinical calm, evidence-first"
+   Token-driven; appended last so it governs final polish.
+   ============================================================ */
+
+/* Typography: crisper rendering + a real bilingual system */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv05" 1, "ss01" 1;
+}
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+.selector-header h1, .workspace-hero-copy h1, .status-hero-status, .page-header h1 {
+  font-weight: 720;
+  letter-spacing: -0.022em;
+  line-height: 1.12;
+}
+
+/* Tabular numerals everywhere clinical/quantitative data is shown */
+.chip, .hero-stat strong, .metric-card strong, .stat-tile-value, .dk-pct, .dk-pct small,
+.centile-badge, .centile-change, .ai-registry-table, .dk-region-table, table td, table th,
+.context-status strong, .cj-rail, .ai-run-meta, .integration-meta strong, .status-hero-status {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Interaction states — quiet motion, decisive press, one focus ring */
+a, button, .role-card, .primary-button, .secondary-button, .text-button,
+.chip, input, select, textarea, .phone-tabbar button, .review-tabs button, .segmented button {
+  transition: background-color var(--kio-dur-1) var(--kio-ease),
+              border-color var(--kio-dur-1) var(--kio-ease),
+              color var(--kio-dur-1) var(--kio-ease),
+              box-shadow var(--kio-dur-2) var(--kio-ease),
+              transform var(--kio-dur-1) var(--kio-ease);
+}
+.primary-button { box-shadow: var(--kio-shadow-xs); }
+.primary-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--kio-shadow-sm); }
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled) { transform: translateY(0.5px); box-shadow: none; }
+.secondary-button:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.text-button:hover { color: var(--accent-dark); }
+
+/* Single, consistent, visible focus ring (keyboard users) */
+:where(a, button, [role="button"], input, select, textarea, .role-card, .centile-card, .phone-tabbar button):focus-visible {
+  outline: none;
+  box-shadow: var(--kio-focus);
+  border-radius: var(--kio-radius-sm);
+}
+.note-area:focus, .form-grid textarea:focus, select:focus, input:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--kio-focus);
+}
+
+/* Inputs: calmer surfaces */
+.note-area, .form-grid textarea, .form-grid input, select, input[type="text"], input[type="search"] {
+  background: var(--kio-surface-25);
+}
+
+/* Cards: lift only where the whole card is the control */
+.role-card:hover, .centile-card:hover { box-shadow: var(--kio-shadow-md); }
+
+/* Respect user motion preferences — fully */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .role-card:hover, .primary-button:hover, .centile-card:hover { transform: none !important; }
+}

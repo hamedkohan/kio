@@ -11,6 +11,7 @@
     "gen:meshes": "python3 scripts/generate_brain_meshes.py"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/vazirmatn": "^5.2.8",
     "@niivue/niivue": "^0.69.0",
     "@vitejs/plugin-react": "^5.0.4",

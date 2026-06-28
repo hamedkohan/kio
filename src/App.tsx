@@ -582,7 +582,7 @@ export default function App() {
 
   if (!role) return (
     <I18nProvider locale={locale} setLocale={switchLocale}>
-      <RoleSelector counts={roleCounts} onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, false); }} />
+      <RoleSelector onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, false); }} />
     </I18nProvider>
   );
 
@@ -663,8 +663,8 @@ function canSavePhysicianNote(caseRecord: KioCase | undefined) {
   return { allowed: decision.allowed, reason: decision.reason ?? "Action not allowed for this role." };
 }
 
-function RoleSelector({ counts, onSelect }: { counts: Record<RoleId, number>; onSelect: (role: RoleId) => void }) {
-  const { locale, dir, setLocale, t, tv, formatNumber } = useI18n();
+function RoleSelector({ onSelect }: { onSelect: (role: RoleId) => void }) {
+  const { locale, dir, setLocale, t, tv } = useI18n();
   return (
     <main className="role-selector" lang={locale} dir={dir}>
       <header className="selector-header">
@@ -685,8 +685,8 @@ function RoleSelector({ counts, onSelect }: { counts: Record<RoleId, number>; on
           return (
             <button key={role} type="button" className={`role-card accent-${definition.accent}`} onClick={() => onSelect(role)}>
               <span className="role-icon">{tv(definition.shortLabel).slice(0, 2)}</span>
-              <div><p>{tv(definition.shortLabel)}</p><h2>{tv(definition.label)}</h2><span>{tv(definition.purpose)}</span></div>
-              <div className="role-card-bottom"><strong>{formatNumber(counts[role])}</strong><span>{t(role === "patient" || role === "caregiver" ? "active case" : role === "research" ? "eligible records" : "items needing attention")}</span><em>{t("Open workspace →")}</em></div>
+              <div><p>{tv(definition.shortLabel)}</p><h2>{tv(definition.label)}</h2></div>
+              <em className="role-open">{t("Open workspace →")}</em>
             </button>
           );
         })}

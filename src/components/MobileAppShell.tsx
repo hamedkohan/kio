@@ -2,19 +2,21 @@ import { useState, type ReactNode } from "react";
 import { roleDefinitions } from "../data";
 import { localeLabels, locales, useI18n } from "../i18n";
 import type { RoleId } from "../types";
+import { Icon } from "./phoneIcons";
 
 type NavItem = { id: string; label: string; count?: number };
 export type AppNotification = { title: string; detail: string; when: string };
 
+// Nav id → line-icon name (clean SVGs, not emoji).
 const NAV_ICONS: Record<string, string> = {
-  status: "🏠",
-  overview: "🏠",
-  forms: "📝",
-  uploads: "📎",
-  consent: "✍️",
-  followup: "📅",
-  requests: "✅",
-  education: "📚",
+  status: "home",
+  overview: "home",
+  forms: "forms",
+  uploads: "uploads",
+  consent: "consent",
+  followup: "calendar",
+  requests: "requests",
+  education: "education",
 };
 
 // App-like, mobile-first shell for the Patient and Caregiver portals:
@@ -52,13 +54,13 @@ export function MobileAppShell({
         </div>
 
         <header className="phone-appbar">
-          <button type="button" className="phone-back" onClick={onRoleHome} aria-label={t("Switch role")}>‹</button>
+          <button type="button" className="phone-back" onClick={onRoleHome} aria-label={t("Switch role")}><Icon name="back" /></button>
           <div className="phone-appbar-title">
             <strong>{tv(definition.label)}</strong>
             <small>{t("Kio")}</small>
           </div>
           <button type="button" className="phone-bell" onClick={() => setNotifOpen((open) => !open)} aria-label={t("Notifications")}>
-            🔔{notifications.length ? <em>{notifications.length}</em> : null}
+            <Icon name="bell" />{notifications.length ? <em>{notifications.length}</em> : null}
           </button>
         </header>
 
@@ -73,7 +75,7 @@ export function MobileAppShell({
         <nav className="phone-tabbar" aria-label={`${tv(definition.shortLabel)} ${t("views")}`}>
           {navItems.map((item) => (
             <button key={item.id} type="button" className={activeView === item.id ? "active" : ""} onClick={() => onNavigate(item.id)}>
-              <span className="phone-tab-icon" aria-hidden="true">{NAV_ICONS[item.id] ?? "•"}</span>
+              <span className="phone-tab-icon"><Icon name={NAV_ICONS[item.id] ?? "dot"} /></span>
               <span className="phone-tab-label">{tv(item.label)}</span>
             </button>
           ))}

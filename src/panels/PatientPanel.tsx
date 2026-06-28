@@ -1,6 +1,16 @@
 import { useI18n } from "../i18n";
-import { EvidenceLayerTabs, InteractiveReportPreview, PageHeader, PanelCard, ProgressBar, ReportReadinessChecklist, StatusChip, Timeline, WorkspaceHero } from "../components/ui";
+import { EvidenceLayerTabs, InteractiveReportPreview, PageHeader, PanelCard, ProgressBar, ReportReadinessChecklist, StatusChip, Timeline } from "../components/ui";
+import { AppGreeting, SectionLabel, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
 import type { PatientSafeCaseView } from "../selectors/visibility";
+
+function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
+  let currentSet = false;
+  return labels.map((label, index) => {
+    if (flags[index]) return { label, state: "done" };
+    if (!currentSet) { currentSet = true; return { label, state: "current" }; }
+    return { label, state: "upcoming" };
+  });
+}
 
 type Props = {
   item: PatientSafeCaseView;
@@ -55,23 +65,33 @@ export function PatientPanel({ item, activeView, onAction }: Props) {
     </>
   );
 
+  const intakeDone = item.intakeStatus === "Complete";
+  const mriDone = item.mriStatus === "Received";
+  const followupScheduled = /^scheduled/i.test(item.followUpStatus);
+  const steps = buildSteps(
+    [intakeDone, mriDone, reportReleased, reportReleased, followupScheduled],
+    ["Information", "Imaging", "Specialist review", "Report", "Follow-up"],
+  );
+  const ctaAction = !intakeDone ? "complete-form" : !mriDone ? "patient-upload" : !/complete|consented/i.test(item.consentStatus) ? "consent" : reportReleased ? "ack-followup" : "support";
+  const tiles: StatTile[] = [
+    { icon: "forms", label: "Information", value: intakeDone ? "Complete" : "Action needed", tone: intakeDone ? "good" : "attention" },
+    { icon: "scan", label: "MRI", value: mriDone ? "Received" : "Waiting", tone: mriDone ? "good" : "info" },
+    { icon: "report", label: "Report", value: reportReleased ? "Available" : "In review", tone: reportReleased ? "good" : "info" },
+    { icon: "calendar", label: "Follow-up", value: item.followUpStatus, tone: followupScheduled ? "good" : "info" },
+  ];
+
   return (
     <>
-      <WorkspaceHero
-        eyebrow="Patient Portal"
-        title={t("Hello, {name}", { name: item.patientFirstName })}
-        description="A calm view of what is happening, what is needed from you, and what your care team has approved for this portal."
-        stats={[
-          { label: "Care team review", value: reportReleased ? "Completed" : "In progress", detail: reportReleased ? "Summary released" : "Specialist review is continuing", tone: reportReleased ? "good" : "info" },
-          { label: "Patient-safe release", value: reportReleased ? "Available" : "Not yet released", detail: "Only approved content appears here", tone: reportReleased ? "good" : "info" },
-          { label: "Technical details", value: "Care-team only", detail: "Reviewed before any plain-language release", tone: "neutral" },
-        ]}
+      <AppGreeting name={item.patientFirstName} kicker="Patient Portal" subtitle="A calm view of your care — only what your team has approved." />
+      <StatusHero
+        eyebrow="Your case status"
+        status={item.safeStatus}
+        steps={steps}
+        ctaLabel={item.nextPatientAction}
+        ctaHint="Your care team will guide every step. Technical details stay care-team only."
+        onCta={() => onAction(ctaAction, item.id)}
       />
-      <section className="patient-status-card">
-        <div><p>{t("Current safe status")}</p><h2>{tv(item.safeStatus)}</h2><span>{t("Your case is being managed by the specialist team.")}</span></div>
-        <div className="patient-next-action"><span>{t("Your next action")}</span><strong>{tv(item.nextPatientAction)}</strong></div>
-      </section>
-      <div className="metric-grid patient-metrics"><div className="patient-metric"><span>{t("Information")}</span><StatusChip label={item.intakeStatus === "Complete" ? "Complete" : "Action needed"} /></div><div className="patient-metric"><span>{t("MRI")}</span><StatusChip label={item.mriStatus === "Received" ? "Received" : "Waiting"} /></div><div className="patient-metric"><span>{t("Report")}</span><StatusChip label={reportReleased ? "Available" : "Not available yet"} /></div><div className="patient-metric"><span>{t("Follow-up")}</span><StatusChip label={item.followUpStatus} /></div></div>
+      <StatTiles tiles={tiles} />
       {reportReleased ? (
         <section className="patient-report-package">
           <div>

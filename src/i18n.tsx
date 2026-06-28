@@ -36,6 +36,19 @@ export type RoleSlug = keyof typeof slugToRole;
 const en: Record<string, string> = {};
 
 const fa: Record<string, string> = {
+  // Patient/Caregiver modern home
+  "Patient-safe release path": "مسیر انتشار امن برای بیمار",
+  "Your case status": "وضعیت پرونده‌ی شما",
+  "Care status": "وضعیت مراقبت",
+  "Your next step": "گام بعدی شما",
+  "Care journey": "مسیر مراقبت",
+  "Caregiver Portal": "پرتال همراه",
+  "A calm view of your care — only what your team has approved.": "نمایی آرام از روند مراقبت شما — فقط آنچه تیم درمان تأیید کرده است.",
+  "Supporting your family member with patient-safe information only.": "پشتیبانی از عضو خانواده‌تان تنها با اطلاعات امنِ بیمار.",
+  "Your care team will guide every step. Technical details stay care-team only.": "تیم درمان شما را در هر گام راهنمایی می‌کند. جزئیات فنی فقط برای تیم درمان باقی می‌ماند.",
+  "You only see patient-safe approved information. Technical details are never shown here.": "شما فقط اطلاعات امنِ تأییدشده را می‌بینید. جزئیات فنی هرگز اینجا نمایش داده نمی‌شوند.",
+  "Specialist review": "بررسی متخصص",
+  "In review": "در حال بررسی",
   // Imaging atrophy: DK regions + annotations
   "3D atrophy brain (Desikan-Killiany)": "مغز سه‌بعدی آتروفی (دسیکان-کیلیانی)",
   "Rotatable cortical surface · per-region DK colouring · drag to rotate, scroll to zoom": "سطح قشری قابل‌چرخش · رنگ‌آمیزی DK به‌تفکیک ناحیه · برای چرخاندن بکشید، برای بزرگ‌نمایی اسکرول کنید",

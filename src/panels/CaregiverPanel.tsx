@@ -1,6 +1,16 @@
 import { useI18n } from "../i18n";
-import { PageHeader, PanelCard, ProgressBar, StatusChip, Timeline, WorkspaceHero } from "../components/ui";
+import { PageHeader, PanelCard, StatusChip, Timeline } from "../components/ui";
+import { AppGreeting, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
 import type { PatientSafeCaseView } from "../selectors/visibility";
+
+function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
+  let currentSet = false;
+  return labels.map((label, index) => {
+    if (flags[index]) return { label, state: "done" };
+    if (!currentSet) { currentSet = true; return { label, state: "current" }; }
+    return { label, state: "upcoming" };
+  });
+}
 
 type Props = {
   item: PatientSafeCaseView;
@@ -72,24 +82,34 @@ export function CaregiverPanel({ item, activeView, onAction }: Props) {
   );
 
   // Care Overview (default)
+  const intakeDone = item.intakeStatus === "Complete";
+  const mriDone = item.mriStatus === "Received";
+  const followupScheduled = /^scheduled/i.test(item.followUpStatus);
+  const steps = buildSteps(
+    [intakeDone, mriDone, reportReleased, reportReleased, followupScheduled],
+    ["Information", "Imaging", "Specialist review", "Report", "Follow-up"],
+  );
+  const ctaAction = !intakeDone ? "complete-form" : !mriDone ? "patient-upload" : !/complete|consented/i.test(item.consentStatus) ? "consent" : "support";
+  const tiles: StatTile[] = [
+    { icon: "forms", label: "Information", value: intakeDone ? "Complete" : "Action needed", tone: intakeDone ? "good" : "attention" },
+    { icon: "scan", label: "MRI", value: mriDone ? "Received" : "Waiting", tone: mriDone ? "good" : "info" },
+    { icon: "report", label: "Report", value: reportReleased ? "Available" : "In review", tone: reportReleased ? "good" : "info" },
+    { icon: "calendar", label: "Follow-up", value: item.followUpStatus, tone: followupScheduled ? "good" : "info" },
+  ];
+
   return (
     <>
-      <WorkspaceHero
-        eyebrow="Caregiver Portal"
-        title={t("Supporting {name}", { name: item.patientFirstName })}
-        description="A calm view of what is happening, what is needed, and how you can help — using only patient-safe approved information."
-        stats={[
-          { label: "Care team review", value: reportReleased ? "Completed" : "In progress", detail: reportReleased ? "Summary released" : "Specialist review continuing", tone: reportReleased ? "good" : "info" },
-          { label: "Information", value: item.intakeStatus === "Complete" ? "Complete" : "Action needed", detail: "Requested patient information", tone: item.intakeStatus === "Complete" ? "good" : "attention" },
-          { label: "Follow-up", value: item.followUpStatus, detail: "Clinic-guided review point", tone: "info" },
-        ]}
+      <AppGreeting name={item.patientFirstName} kicker="Caregiver Portal" subtitle="Supporting your family member with patient-safe information only." />
+      <StatusHero
+        eyebrow="Care status"
+        status={item.safeStatus}
+        steps={steps}
+        ctaLabel={item.nextPatientAction}
+        ctaHint="You only see patient-safe approved information. Technical details are never shown here."
+        onCta={() => onAction(ctaAction, item.id)}
       />
-      <section className="patient-status-card">
-        <div><p>{t("Current safe status")}</p><h2>{tv(item.safeStatus)}</h2><span>{t("This case is being managed by the specialist team.")}</span></div>
-        <div className="patient-next-action"><span>{t("What is needed")}</span><strong>{tv(item.nextPatientAction)}</strong></div>
-      </section>
+      <StatTiles tiles={tiles} />
       <PanelCard title="How you can help" subtitle="Patient-safe requested actions">
-        <ProgressBar value={item.patientFormProgress} label="Information completion" />
         <div className="patient-actions">
           <button onClick={() => onAction("complete-form", item.id)}><strong>{t("Help with information")}</strong><span>{t("Check forms and requested details")}</span></button>
           <button onClick={() => onAction("patient-upload", item.id)}><strong>{t("Help with uploads")}</strong><span>{t("MRI and document receipt status")}</span></button>

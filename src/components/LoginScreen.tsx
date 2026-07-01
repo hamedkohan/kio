@@ -1,32 +1,14 @@
 import { useState } from "react";
 import { localeLabels, locales, useI18n } from "../i18n";
-import { authenticate, type AppUser } from "../auth";
+import { authenticate, getOtpUsers, requestOtp, verifyOtp, SIMULATED_OTP, type AppUser } from "../auth";
+
+type Mode = "staff" | "otp";
 
 // Bilingual sign-in gate shown before the role selector.
-// On success it hands the matched user back to the app, which stores the session.
+// Staff sign in with username + password; patients/caregivers with phone + OTP.
 export function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void }) {
   const { locale, dir, setLocale, t } = useI18n();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      const user = await authenticate(username, password);
-      if (user) {
-        onAuthenticated(user);
-      } else {
-        setError(t("Incorrect username or password."));
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
+  const [mode, setMode] = useState<Mode>("staff");
 
   return (
     <main className="login-screen" lang={locale} dir={dir}>
@@ -41,40 +23,20 @@ export function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: AppUs
         </label>
       </div>
 
-      <form className="login-card" onSubmit={submit}>
+      <div className="login-card">
         <p className="eyebrow">{t("Clickable product prototype")}</p>
         <h1>{t("Sign in to continue")}</h1>
-        <p className="login-lead">{t("This workspace is private. Please sign in with your access credentials.")}</p>
 
-        <label className="login-field">
-          <span>{t("Username")}</span>
-          <input
-            type="text"
-            autoComplete="username"
-            autoCapitalize="none"
-            spellCheck={false}
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            required
-          />
-        </label>
+        <div className="login-tabs" role="tablist" aria-label={t("Sign-in method")}>
+          <button type="button" role="tab" aria-selected={mode === "staff"} className={mode === "staff" ? "active" : ""} onClick={() => setMode("staff")}>
+            {t("Staff")}
+          </button>
+          <button type="button" role="tab" aria-selected={mode === "otp"} className={mode === "otp" ? "active" : ""} onClick={() => setMode("otp")}>
+            {t("Patient / Caregiver")}
+          </button>
+        </div>
 
-        <label className="login-field">
-          <span>{t("Password")}</span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </label>
-
-        {error ? <p className="login-error" role="alert">{error}</p> : null}
-
-        <button type="submit" className="login-submit" disabled={busy}>
-          {busy ? t("Signing in…") : t("Sign in")}
-        </button>
+        {mode === "staff" ? <StaffForm onAuthenticated={onAuthenticated} /> : <OtpForm onAuthenticated={onAuthenticated} />}
 
         <div className="login-langtoggle" role="group" aria-label={t("Language")}>
           {locales.map((item) => (
@@ -89,12 +51,140 @@ export function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: AppUs
             </button>
           ))}
         </div>
-      </form>
+      </div>
 
       <footer className="login-footer">
         <span>{t("Mock data only")}</span>
         <span>{t("Prototype access gate — not for real patient data")}</span>
       </footer>
     </main>
+  );
+}
+
+function StaffForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void }) {
+  const { t } = useI18n();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const user = await authenticate(username, password);
+      if (user) onAuthenticated(user);
+      else setError(t("Incorrect username or password."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="login-form" onSubmit={submit}>
+      <p className="login-lead">{t("This workspace is private. Please sign in with your access credentials.")}</p>
+
+      <label className="login-field">
+        <span>{t("Username")}</span>
+        <input type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} value={username} onChange={(event) => setUsername(event.target.value)} required />
+      </label>
+
+      <label className="login-field">
+        <span>{t("Password")}</span>
+        <input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+      </label>
+
+      {error ? <p className="login-error" role="alert">{error}</p> : null}
+
+      <button type="submit" className="login-submit" disabled={busy}>{busy ? t("Signing in…") : t("Sign in")}</button>
+    </form>
+  );
+}
+
+function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void }) {
+  const { t } = useI18n();
+  const [step, setStep] = useState<"phone" | "code">("phone");
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+
+  const sendCode = (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    if (requestOtp(phone)) {
+      setStep("code");
+    } else {
+      setError(t("We couldn't find that mobile number. Please check and try again."));
+    }
+  };
+
+  const verify = (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    const user = verifyOtp(phone, code);
+    if (user) onAuthenticated(user);
+    else setError(t("Incorrect code. Please try again."));
+  };
+
+  const reset = () => {
+    setStep("phone");
+    setCode("");
+    setError("");
+  };
+
+  if (step === "phone") {
+    return (
+      <form className="login-form" onSubmit={sendCode}>
+        <p className="login-lead">{t("Enter your mobile number. We'll send you a one-time code by SMS.")}</p>
+
+        <label className="login-field">
+          <span>{t("Mobile number")}</span>
+          <input type="tel" inputMode="tel" autoComplete="tel" placeholder="0912 000 0001" value={phone} onChange={(event) => setPhone(event.target.value)} required />
+        </label>
+
+        {error ? <p className="login-error" role="alert">{error}</p> : null}
+
+        <button type="submit" className="login-submit">{t("Send code")}</button>
+
+        <OtpDemoHint />
+      </form>
+    );
+  }
+
+  return (
+    <form className="login-form" onSubmit={verify}>
+      <p className="login-lead">{t("We sent a one-time code to your phone. Enter it below to continue.")}</p>
+
+      <label className="login-field">
+        <span>{t("One-time code")}</span>
+        <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} placeholder="1234" value={code} onChange={(event) => setCode(event.target.value)} required autoFocus />
+      </label>
+
+      {error ? <p className="login-error" role="alert">{error}</p> : null}
+
+      <button type="submit" className="login-submit">{t("Verify & sign in")}</button>
+      <button type="button" className="login-linkbutton" onClick={reset}>{t("Use a different number")}</button>
+
+      <OtpDemoHint />
+    </form>
+  );
+}
+
+// Demo aid: no SMS provider is connected, so show the registered numbers and the
+// fixed code. Remove this block once real OTP delivery is wired up.
+function OtpDemoHint() {
+  const { t, tv } = useI18n();
+  return (
+    <div className="login-demo-hint">
+      <strong>{t("Demo mode")}</strong>
+      <p>{t("SMS is not connected yet. Use one of these numbers and code {code}.").replace("{code}", SIMULATED_OTP)}</p>
+      <ul>
+        {getOtpUsers().map((user) => (
+          <li key={user.username}><span>{tv(user.displayName ?? user.username)}</span><code>{user.phone}</code></li>
+        ))}
+      </ul>
+    </div>
   );
 }

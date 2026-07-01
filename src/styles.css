@@ -4488,3 +4488,53 @@ body[data-locale="fa"] .ops-focus-go { transform: scaleX(-1); }
   border-radius: 999px;
   cursor: pointer;
 }
+
+/* --- Login: staff / OTP tabs + OTP demo hint ----------------------------- */
+.login-tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.4rem 0 1.4rem;
+  padding: 0.25rem;
+  background: var(--accent-soft);
+  border-radius: 999px;
+}
+.login-tabs button {
+  flex: 1;
+  padding: 0.5rem 0.6rem;
+  color: var(--accent-dark);
+  font-size: 0.78rem;
+  font-weight: 750;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.login-tabs button.active { color: var(--accent-dark); background: #fff; box-shadow: 0 6px 16px rgba(27,41,44,.08); }
+
+.login-linkbutton {
+  display: block;
+  width: 100%;
+  margin-top: 0.7rem;
+  padding: 0.4rem;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.login-linkbutton:hover { text-decoration: underline; }
+
+.login-demo-hint {
+  margin-top: 1.3rem;
+  padding: 0.8rem 0.9rem;
+  background: #fbfaf2;
+  border: 1px dashed #e2dcb8;
+  border-radius: 0.6rem;
+}
+.login-demo-hint strong { display: block; color: #8a7a1f; font-size: 0.66rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em; }
+.login-demo-hint p { margin: 0.3rem 0 0.55rem; color: #6f6a52; font-size: 0.78rem; line-height: 1.5; }
+.login-demo-hint ul { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.login-demo-hint li { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; font-size: 0.8rem; }
+.login-demo-hint li span { color: var(--ink); font-weight: 700; }
+.login-demo-hint li code { color: var(--accent-dark); font-size: 0.82rem; letter-spacing: 0.03em; }

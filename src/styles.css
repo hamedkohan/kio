@@ -4546,3 +4546,28 @@ body[data-locale="fa"] .ops-focus-go { transform: scaleX(-1); }
   background: var(--accent-soft);
   border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
 }
+
+/* Segmented one-time-code boxes */
+.otp-boxes {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  direction: ltr; /* keep digit order left-to-right even in RTL layouts */
+}
+.otp-boxes input {
+  inline-size: 3.2rem;
+  block-size: 3.6rem;
+  padding: 0;
+  color: var(--ink);
+  font-size: 1.55rem;
+  font-weight: 700;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+}
+.otp-boxes input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}

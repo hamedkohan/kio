@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { localeLabels, locales, useI18n } from "../i18n";
 import { authenticate, getOtpUsers, requestOtp, verifyOtp, type AppUser } from "../auth";
 
@@ -130,12 +130,6 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
     else setError(t("Incorrect code. Please try again."));
   };
 
-  const onCodeChange = (raw: string) => {
-    const digits = raw.replace(/\D/g, "").slice(0, 4);
-    setCode(digits);
-    if (digits.length === 4) verifyCode(digits); // auto-submit on the 4th digit
-  };
-
   const verify = (event: React.FormEvent) => {
     event.preventDefault();
     verifyCode(code);
@@ -182,15 +176,92 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
     <form className="login-form" onSubmit={verify}>
       <p className="login-lead">{t("We sent a one-time code to your phone. Enter it below to continue.")}</p>
 
-      <label className="login-field">
+      <div className="login-field">
         <span>{t("One-time code")}</span>
-        <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={4} value={code} onChange={(event) => onCodeChange(event.target.value)} required autoFocus />
-      </label>
+        <OtpCodeInput length={4} value={code} onChange={setCode} onComplete={verifyCode} />
+      </div>
 
       {error ? <p className="login-error" role="alert">{error}</p> : null}
 
       <button type="submit" className="login-submit">{t("Verify & sign in")}</button>
       <button type="button" className="login-linkbutton" onClick={reset}>{t("Use a different number")}</button>
     </form>
+  );
+}
+
+// Segmented one-time-code input: `length` separate single-digit boxes with
+// auto-advance, backspace-to-previous, and paste support. Fires onComplete when
+// every box is filled.
+function OtpCodeInput({ length, value, onChange, onComplete }: { length: number; value: string; onChange: (value: string) => void; onComplete: (value: string) => void }) {
+  const { t } = useI18n();
+  const refs = useRef<Array<HTMLInputElement | null>>([]);
+  const digits = Array.from({ length }, (_, index) => value[index] ?? "");
+
+  const commit = (next: string[]) => {
+    const joined = next.join("");
+    onChange(joined);
+    if (joined.length === length && !next.includes("")) onComplete(joined);
+  };
+
+  const focusBox = (index: number) => refs.current[index]?.focus();
+
+  const handleChange = (index: number, raw: string) => {
+    const digit = (raw.match(/\d/g) ?? []).pop();
+    if (!digit) return; // ignore non-numeric input
+    const next = [...digits];
+    next[index] = digit;
+    commit(next);
+    if (index < length - 1) focusBox(index + 1);
+  };
+
+  const handleKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      const next = [...digits];
+      if (next[index]) {
+        next[index] = "";
+        commit(next);
+      } else if (index > 0) {
+        next[index - 1] = "";
+        commit(next);
+        focusBox(index - 1);
+      }
+    } else if (event.key === "ArrowLeft" && index > 0) {
+      focusBox(index - 1);
+    } else if (event.key === "ArrowRight" && index < length - 1) {
+      focusBox(index + 1);
+    }
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = (event.clipboardData.getData("text").match(/\d/g) ?? []).slice(0, length);
+    if (!pasted.length) return;
+    event.preventDefault();
+    const next = Array.from({ length }, (_, index) => pasted[index] ?? "");
+    commit(next);
+    const firstEmpty = next.findIndex((digit) => !digit);
+    focusBox(firstEmpty === -1 ? length - 1 : firstEmpty);
+  };
+
+  return (
+    <div className="otp-boxes" onPaste={handlePaste}>
+      {digits.map((digit, index) => (
+        <input
+          key={index}
+          ref={(element) => { refs.current[index] = element; }}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete={index === 0 ? "one-time-code" : "off"}
+          maxLength={1}
+          value={digit}
+          onChange={(event) => handleChange(index, event.target.value)}
+          onKeyDown={(event) => handleKeyDown(index, event)}
+          onFocus={(event) => event.target.select()}
+          aria-label={`${t("One-time code")} ${index + 1}`}
+          autoFocus={index === 0}
+        />
+      ))}
+    </div>
   );
 }

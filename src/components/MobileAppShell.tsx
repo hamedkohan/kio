@@ -28,6 +28,7 @@ export function MobileAppShell({
   onNavigate,
   onRoleHome,
   onLogout,
+  canSwitchRole = true,
   children,
   toast,
   notifications = [],
@@ -38,6 +39,7 @@ export function MobileAppShell({
   onNavigate: (view: string) => void;
   onRoleHome: () => void;
   onLogout?: () => void;
+  canSwitchRole?: boolean;
   children: ReactNode;
   toast?: string;
   notifications?: AppNotification[];
@@ -56,7 +58,7 @@ export function MobileAppShell({
         </div>
 
         <header className="phone-appbar">
-          <button type="button" className="phone-back" onClick={onRoleHome} aria-label={t("Switch role")}><Icon name="back" /></button>
+          {canSwitchRole ? <button type="button" className="phone-back" onClick={onRoleHome} aria-label={t("Switch role")}><Icon name="back" /></button> : <span className="phone-back phone-back-spacer" aria-hidden="true" />}
           <div className="phone-appbar-title">
             <strong>{tv(definition.label)}</strong>
             <small>{t("Kio")}</small>

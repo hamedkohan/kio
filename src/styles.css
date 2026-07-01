@@ -4489,6 +4489,9 @@ body[data-locale="fa"] .ops-focus-go { transform: scaleX(-1); }
   cursor: pointer;
 }
 
+/* Keeps the app-bar title centered when the back button is hidden. */
+.phone-back-spacer { visibility: hidden; pointer-events: none; }
+
 /* --- Login: staff / OTP tabs + OTP demo hint ----------------------------- */
 .login-tabs {
   display: flex;

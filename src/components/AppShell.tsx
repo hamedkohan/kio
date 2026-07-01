@@ -12,6 +12,7 @@ export function AppShell({
   onNavigate,
   onRoleHome,
   onLogout,
+  canSwitchRole = true,
   children,
   toast,
 }: {
@@ -21,6 +22,7 @@ export function AppShell({
   onNavigate: (view: string) => void;
   onRoleHome: () => void;
   onLogout?: () => void;
+  canSwitchRole?: boolean;
   children: ReactNode;
   toast?: string;
 }) {
@@ -60,7 +62,7 @@ export function AppShell({
           <p>{t("Allowed view")}</p>
           <strong>{tv(definition.permission)}</strong>
         </div>
-        <button className="switch-role" type="button" onClick={onRoleHome}>{t("Switch role")}</button>
+        {canSwitchRole ? <button className="switch-role" type="button" onClick={onRoleHome}>{t("Switch role")}</button> : null}
         {onLogout ? <button className="logout-button sidebar-logout" type="button" onClick={onLogout}>{t("Log out")}</button> : null}
       </aside>
       <div className="app-main">

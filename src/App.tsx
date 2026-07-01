@@ -105,6 +105,22 @@ export default function App() {
     }
   }, [user, role, locale]);
 
+  // Scoped users with exactly one accessible panel skip the role selector and
+  // land straight in their workspace. Only multi-role users (master) choose.
+  // useLayoutEffect so the redirect happens before paint (no single-tile flash).
+  useLayoutEffect(() => {
+    if (!user || role) return;
+    const roles = (Object.keys(roleDefinitions) as RoleId[]).filter((candidate) => canAccessRole(user, candidate));
+    if (roles.length === 1) {
+      const only = roles[0];
+      setRole(only);
+      setSelectedCaseId(defaultCaseForRole(only));
+      setActiveViews((current) => ({ ...current, [only]: defaultViews[only] }));
+      normalizeRoute(locale, only, defaultViews[only], true);
+    }
+    // defaultCaseForRole intentionally omitted: recreated each render, read live.
+  }, [user, role, locale]);
+
   // Persist and restore scroll position per page (locale + role + sub-view).
   const scrollKey = `${SCROLL_STORAGE_PREFIX}${role ?? "home"}:${currentView ?? ""}`;
   useLayoutEffect(() => {
@@ -671,12 +687,18 @@ export default function App() {
 
   // A signed-in user may only open panels their access grants. Master = all.
   const accessibleRoles = (Object.keys(roleDefinitions) as RoleId[]).filter((candidate) => canAccessRole(user, candidate));
+  const canSwitchRole = accessibleRoles.length > 1;
 
-  if (!role) return (
-    <I18nProvider locale={locale} setLocale={switchLocale}>
-      <RoleSelector roles={accessibleRoles} userName={user.displayName ?? user.username} onLogout={handleLogout} onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, defaultViews[nextRole], false); }} />
-    </I18nProvider>
-  );
+  if (!role) {
+    // Single-panel users are auto-entered by the layout effect above; render a
+    // calm placeholder (not the one-tile selector) for that pre-redirect frame.
+    if (!canSwitchRole) return <I18nProvider locale={locale} setLocale={switchLocale}><div className="role-selector" /></I18nProvider>;
+    return (
+      <I18nProvider locale={locale} setLocale={switchLocale}>
+        <RoleSelector roles={accessibleRoles} userName={user.displayName ?? user.username} onLogout={handleLogout} onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, defaultViews[nextRole], false); }} />
+      </I18nProvider>
+    );
+  }
 
   const activeView = activeViews[role];
   const setView = (view: string) => setActiveViews((current) => ({ ...current, [role]: view }));
@@ -706,11 +728,11 @@ export default function App() {
   return (
     <I18nProvider locale={locale} setLocale={switchLocale}>
       {isAppLike ? (
-        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} toast={toast} notifications={patientNotifications}>
+        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} canSwitchRole={canSwitchRole} toast={toast} notifications={patientNotifications}>
           {shellChildren}
         </MobileAppShell>
       ) : (
-        <AppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} toast={toast}>
+        <AppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} canSwitchRole={canSwitchRole} toast={toast}>
           {shellChildren}
         </AppShell>
       )}

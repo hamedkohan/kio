@@ -9,6 +9,7 @@ import { CaseContextBar } from "../components/CaseContextBar";
 import { getDemoCaseDetail, getDemoCaseSummaries } from "../data/kio-demo/repository";
 import { DemoReportWorkspace } from "../components/DemoReportWorkspace";
 import type { PhysicianBiomarkerEvidenceView, PhysicianCaseReviewView } from "../domain";
+import type { Directory } from "../data/directory";
 
 type Props = {
   caseViews: PhysicianCaseReviewView[];
@@ -16,6 +17,7 @@ type Props = {
   selectedCaseId: string;
   onSelectCase: (id: string) => void;
   onAction: (action: string, caseId: string, value?: string) => void;
+  directory: Directory;
 };
 
 export const physicianNav = [
@@ -29,9 +31,16 @@ export const physicianNav = [
   { id: "reports", label: "Final Reports" },
 ];
 
-export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelectCase, onAction }: Props) {
+export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelectCase, onAction, directory }: Props) {
   const { t, tv } = useI18n();
   const cases = caseViews.map((view) => view.caseRecord);
+  const neurologists = useMemo(() => directory.clinicians.filter((clinician) => clinician.role === "neurologist" && clinician.active), [directory]);
+  const [actingAs, setActingAs] = useState(() => neurologists[0]?.name ?? "");
+  const [myCasesOnly, setMyCasesOnly] = useState(false);
+  // "My cases" = cases assigned to the clinician you are acting as.
+  const forActing = (items: KioCase[]) => (myCasesOnly && actingAs ? items.filter((item) => item.assignedNeurologist === actingAs) : items);
+  const assignedToMe = cases.filter((item) => item.assignedNeurologist === actingAs);
+
   const readyForReview = cases.filter((item) => /reviewed/i.test(item.radiologistStatus) && /review pending|not ready/i.test(item.neurologistStatus) && !item.physicianNote);
   const finalizationPending = cases.filter((item) => /reviewed/i.test(item.radiologistStatus) && !/physician reviewed/i.test(item.neurologistStatus) && !!item.physicianNote);
   const releasePending = cases.filter((item) => /physician reviewed/i.test(item.neurologistStatus) && !/released/i.test(item.reportStatus));
@@ -58,17 +67,34 @@ export function PhysicianPanel({ caseViews, activeView, selectedCaseId, onSelect
         title="Turn reviewed evidence into patient-safe clinical meaning"
         description="Review radiologist handoff, structured visual summary, quantitative evidence, intake context, synthesis readiness, and patient-safe release status."
         stats={[
-          { label: "Ready for review", value: readyForReview.length, detail: "Radiologist handoff complete", tone: readyForReview.length ? "attention" : "good" },
-          { label: "Draft synthesis", value: finalizationPending.length, detail: "Interpretation in progress", tone: "info" },
-          { label: "Release pending", value: releasePending.length, detail: "Patient-safe approval path", tone: releasePending.length ? "attention" : "good" },
-          { label: "Completed", value: completed.length, detail: "Read-only clinical output", tone: "good" },
+          { label: "Ready for review", value: forActing(readyForReview).length, detail: "Radiologist handoff complete", tone: forActing(readyForReview).length ? "attention" : "good" },
+          { label: "Draft synthesis", value: forActing(finalizationPending).length, detail: "Interpretation in progress", tone: "info" },
+          { label: "Release pending", value: forActing(releasePending).length, detail: "Patient-safe approval path", tone: forActing(releasePending).length ? "attention" : "good" },
+          { label: "Completed", value: forActing(completed).length, detail: "Read-only clinical output", tone: "good" },
         ]}
       />
+      <div className="acting-bar">
+        <label className="acting-as">
+          <span>{t("Acting as")}</span>
+          {neurologists.length ? (
+            <select value={actingAs} onChange={(event) => setActingAs(event.target.value)}>
+              {neurologists.map((clinician) => <option key={clinician.id} value={clinician.name}>{clinician.name}</option>)}
+            </select>
+          ) : <strong>{t("No clinician in directory")}</strong>}
+        </label>
+        <div className="acting-toggle" role="group" aria-label={t("Case scope")}>
+          <button type="button" className={!myCasesOnly ? "active" : ""} aria-pressed={!myCasesOnly} onClick={() => setMyCasesOnly(false)}>{t("All cases")} <em>{cases.length}</em></button>
+          <button type="button" className={myCasesOnly ? "active" : ""} aria-pressed={myCasesOnly} onClick={() => setMyCasesOnly(true)}>{t("My cases")} <em>{assignedToMe.length}</em></button>
+        </div>
+      </div>
+      {myCasesOnly ? (
+        <WorklistGroup title="Assigned to you" subtitle="Every case assigned to you, at any stage — visible from the moment Operations assigns it" items={assignedToMe} selectedId={selected.id} onSelectCase={onSelectCase} empty="No cases are assigned to you yet." />
+      ) : null}
       <PanelCard title="Case journey" subtitle="Where the selected case sits in the end-to-end flow"><CaseJourney caseRecord={selected} compact /></PanelCard>
-      <WorklistGroup title="Ready for Physician Review" subtitle="Radiologist-reviewed cases awaiting clinical interpretation" items={readyForReview} selectedId={selected.id} onSelectCase={onSelectCase} empty="No ready cases." />
-      <WorklistGroup title="Report Finalization Pending" subtitle="Interpretation drafted or in progress, not finalized" items={finalizationPending} selectedId={selected.id} onSelectCase={onSelectCase} empty="No draft interpretations waiting for finalization." />
-      <WorklistGroup title="Release Approval Pending" subtitle="Finalized output awaiting patient-safe summary or PDF approval" items={releasePending} selectedId={selected.id} onSelectCase={onSelectCase} empty="No release approvals pending." />
-      <WorklistGroup title="Completed / Released" subtitle="Read-only clinical reviews and released outputs" items={completed} selectedId={selected.id} onSelectCase={onSelectCase} empty="No completed cases." readOnly />
+      <WorklistGroup title="Ready for Physician Review" subtitle="Radiologist-reviewed cases awaiting clinical interpretation" items={forActing(readyForReview)} selectedId={selected.id} onSelectCase={onSelectCase} empty="No ready cases." />
+      <WorklistGroup title="Report Finalization Pending" subtitle="Interpretation drafted or in progress, not finalized" items={forActing(finalizationPending)} selectedId={selected.id} onSelectCase={onSelectCase} empty="No draft interpretations waiting for finalization." />
+      <WorklistGroup title="Release Approval Pending" subtitle="Finalized output awaiting patient-safe summary or PDF approval" items={forActing(releasePending)} selectedId={selected.id} onSelectCase={onSelectCase} empty="No release approvals pending." />
+      <WorklistGroup title="Completed / Released" subtitle="Read-only clinical reviews and released outputs" items={forActing(completed)} selectedId={selected.id} onSelectCase={onSelectCase} empty="No completed cases." readOnly />
       <DemoReportWorkspace role="physician" title="Imported report evidence as physician synthesis workspaces" />
     </>
   );

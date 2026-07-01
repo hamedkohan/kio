@@ -34,6 +34,7 @@ export type CreateCaseFormValues = {
   caregiverContact?: string;
   priorImagingAvailable: "Yes" | "No" | "Unknown";
   operationsNote?: string;
+  imagingCenter?: string;
 };
 
 export type KioCase = {
@@ -76,8 +77,10 @@ export type KioCase = {
   blocker?: string;
   referralSource?: string;
   mriSource?: string;
+  imagingCenter?: string;
   caregiverName?: string;
   caregiverContact?: string;
+  caregiverInviteStatus?: "Not invited" | "Invite sent" | "Active";
   priorImagingAvailable?: "Yes" | "No" | "Unknown";
   operationsNote?: string;
   assignedRadiologist: string;
@@ -106,6 +109,9 @@ export type KioCase = {
   patientSafeStatus: string;
   patientNextAction: string;
   patientApprovedSummary?: string;
+  followUpType?: string;
+  followUpDue?: string;
+  followUpCoordination?: "Pending" | "Scheduled" | "Reminder sent" | "Done";
   patientFormProgress: number;
   consentStatus: string;
   radiologistComment: string;

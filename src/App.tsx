@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { AppShell } from "./components/AppShell";
 import { MobileAppShell } from "./components/MobileAppShell";
 import {
@@ -19,6 +19,7 @@ import {
   structuredReports,
   structuredVisualAssessments,
 } from "./data";
+import { initialDirectory, upsertById, type Directory, type DirectoryClinician, type ImagingCenter } from "./data/directory";
 import { I18nProvider, getDirection, getStoredLocale, isLocale, roleToSlug, slugToRole, storeLocale, type Locale, type RoleSlug, useI18n } from "./i18n";
 import type { CreateCaseFormValues, KioCase, RoleId } from "./types";
 import { OperationsPanel, operationsNav } from "./panels/OperationsPanel";
@@ -30,6 +31,9 @@ import { ResearchPanel, researchNav } from "./panels/ResearchPanel";
 import { applyPatientReleaseAction, applyPublicationApprovalAction, canPerformCaseAction, getLatestPatientReleasePackageForCase, getLatestPublicationApprovalForCase, getOperationsCaseCoordinationViews, getPatientPortalReleaseView, getPhysicianCaseReviewView, getRadiologistCaseReviewView, getReleaseSafetyCheckForPackage, guardCaseAction, guardCaseActionSequence, guardCreateCase, withDerivedCaseFields, type CaseAction, type ClinicalEvidenceCollections, type GuardedCaseActionContext, type GuardedTransitionResult } from "./domain";
 import { getNextPossibleStates } from "./domain/caseStateSelectors";
 import { toPatientSafeCaseView, toResearchSafeCaseView } from "./selectors/visibility";
+
+const SELECTED_CASE_STORAGE_KEY = "kio.selectedCase";
+const SCROLL_STORAGE_PREFIX = "kio.scroll.";
 
 const defaultViews: Record<RoleId, string> = {
   operations: "dashboard",
@@ -52,16 +56,29 @@ const navByRole = {
 type RouteState = {
   locale: Locale;
   role: RoleId | null;
+  view: string | null;
 };
 
 export default function App() {
   const initialRoute = getInitialRoute();
   const [locale, setLocaleState] = useState<Locale>(initialRoute.locale);
   const [role, setRole] = useState<RoleId | null>(initialRoute.role);
-  const [activeViews, setActiveViews] = useState<Record<RoleId, string>>(defaultViews);
+  const [activeViews, setActiveViews] = useState<Record<RoleId, string>>(() =>
+    initialRoute.role && initialRoute.view ? { ...defaultViews, [initialRoute.role]: initialRoute.view } : defaultViews,
+  );
   const [cases, setCases] = useState<KioCase[]>(initialCases);
-  const [selectedCaseId, setSelectedCaseId] = useState("K-2041");
+  const [directory, setDirectory] = useState<Directory>(initialDirectory);
+  const saveClinician = (clinician: DirectoryClinician) => setDirectory((current) => ({ ...current, clinicians: upsertById(current.clinicians, clinician) }));
+  const saveCenter = (center: ImagingCenter) => setDirectory((current) => ({ ...current, centers: upsertById(current.centers, center) }));
+  const [selectedCaseId, setSelectedCaseId] = useState(() => window.localStorage.getItem(SELECTED_CASE_STORAGE_KEY) ?? "K-2041");
   const [toast, setToast] = useState("");
+
+  const currentView = role ? activeViews[role] : null;
+
+  // Let the app own scroll restoration so a refresh returns to the exact spot.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -69,8 +86,29 @@ export default function App() {
     document.body.dataset.locale = locale;
     document.body.dataset.dir = getDirection(locale);
     storeLocale(locale);
-    normalizeRoute(locale, role, true);
-  }, [locale, role]);
+    normalizeRoute(locale, role, currentView, true);
+  }, [locale, role, currentView]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SELECTED_CASE_STORAGE_KEY, selectedCaseId);
+  }, [selectedCaseId]);
+
+  // Persist and restore scroll position per page (locale + role + sub-view).
+  const scrollKey = `${SCROLL_STORAGE_PREFIX}${role ?? "home"}:${currentView ?? ""}`;
+  useLayoutEffect(() => {
+    const scroller = document.querySelector(".phone-content") as HTMLElement | null;
+    const target: HTMLElement | Window = scroller ?? window;
+    const read = () => (scroller ? scroller.scrollTop : window.scrollY);
+    const write = (value: number) => (scroller ? (scroller.scrollTop = value) : window.scrollTo(0, value));
+    const saved = window.sessionStorage.getItem(scrollKey);
+    write(saved ? Number(saved) || 0 : 0);
+    const onScroll = () => window.sessionStorage.setItem(scrollKey, String(read()));
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.sessionStorage.setItem(scrollKey, String(read()));
+      target.removeEventListener("scroll", onScroll);
+    };
+  }, [scrollKey]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -79,7 +117,7 @@ export default function App() {
       setRole(route.role);
       if (route.role) {
         setSelectedCaseId(defaultCaseForRole(route.role));
-        setActiveViews((current) => ({ ...current, [route.role!]: defaultViews[route.role!] }));
+        setActiveViews((current) => ({ ...current, [route.role!]: route.view ?? defaultViews[route.role!] }));
       }
     };
     window.addEventListener("popstate", handlePopState);
@@ -89,7 +127,7 @@ export default function App() {
   const switchLocale = (nextLocale: Locale) => {
     setLocaleState(nextLocale);
     storeLocale(nextLocale);
-    normalizeRoute(nextLocale, role, false);
+    normalizeRoute(nextLocale, role, currentView, false);
   };
 
   const showToast = (message: string) => {
@@ -175,6 +213,7 @@ export default function App() {
       blocker: missingItems.length ? missingItems.join("; ") : undefined,
       referralSource: values.referralSource,
       mriSource: values.mriSource,
+      imagingCenter: values.imagingCenter || undefined,
       caregiverName: values.caregiverName,
       caregiverContact: values.caregiverContact,
       priorImagingAvailable: values.priorImagingAvailable,
@@ -242,6 +281,26 @@ export default function App() {
     if (action === "reset-demo") {
       updateCase(caseId, (item) => addTimeline({ ...item, state: "CASE_CREATED", stateEnteredAt: "Now" }, "Reset (demo)", "Case returned to Case Created"));
       showToast("Demo case reset to the start of the journey.");
+      return;
+    }
+    if (action === "send-caregiver-invite") {
+      updateCase(caseId, (item) => addTimeline({ ...item, caregiverInviteStatus: "Invite sent" }, "Caregiver portal invite sent", `Secure portal invite issued to ${item.caregiverName || "caregiver"}`, true));
+      showToast("Caregiver portal invite sent (simulated).");
+      return;
+    }
+    if (action === "followup-schedule") {
+      updateCase(caseId, (item) => addTimeline({ ...item, followUpCoordination: "Scheduled" }, "Follow-up appointment scheduled", `${item.followUpType ?? "Follow-up"} scheduled${item.followUpDue ? ` for ${item.followUpDue}` : ""}`, true));
+      showToast("Follow-up appointment scheduled.");
+      return;
+    }
+    if (action === "followup-remind") {
+      updateCase(caseId, (item) => addTimeline({ ...item, followUpCoordination: "Reminder sent" }, "Follow-up reminder sent", "Reminder sent to patient and caregiver", true));
+      showToast("Follow-up reminder sent (simulated).");
+      return;
+    }
+    if (action === "followup-done") {
+      updateCase(caseId, (item) => addTimeline({ ...item, followUpCoordination: "Done" }, "Follow-up coordinated", "Physician-defined follow-up review point coordinated", true));
+      showToast("Follow-up coordination marked done.");
       return;
     }
     if (action === "receive-mri") {
@@ -582,14 +641,14 @@ export default function App() {
 
   if (!role) return (
     <I18nProvider locale={locale} setLocale={switchLocale}>
-      <RoleSelector onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, false); }} />
+      <RoleSelector onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, defaultViews[nextRole], false); }} />
     </I18nProvider>
   );
 
   const activeView = activeViews[role];
   const setView = (view: string) => setActiveViews((current) => ({ ...current, [role]: view }));
   const navItems = navByRole[role].map((item) => ({ ...item, count: item.id === defaultViews[role] ? roleCounts[role] : undefined }));
-  const goRoleHome = () => { setRole(null); normalizeRoute(locale, null, false); };
+  const goRoleHome = () => { setRole(null); normalizeRoute(locale, null, null, false); };
 
   const patientSafeView = getPatientSafeView(cases.find((item) => item.id === "K-2041") ?? cases[0]);
   const patientNotifications = patientSafeView.timeline
@@ -600,9 +659,9 @@ export default function App() {
 
   const shellChildren = (
     <>
-      {role === "operations" ? <OperationsPanel caseViews={operationsCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleOperationsAction} onCreateCase={createCaseShell} /> : null}
-      {role === "radiologist" ? <RadiologistPanel caseViews={radiologistCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleRadiologistAction} /> : null}
-      {role === "physician" ? <PhysicianPanel caseViews={physicianCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handlePhysicianAction} /> : null}
+      {role === "operations" ? <OperationsPanel caseViews={operationsCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleOperationsAction} onCreateCase={createCaseShell} directory={directory} onSaveClinician={saveClinician} onSaveCenter={saveCenter} /> : null}
+      {role === "radiologist" ? <RadiologistPanel caseViews={radiologistCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleRadiologistAction} directory={directory} /> : null}
+      {role === "physician" ? <PhysicianPanel caseViews={physicianCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handlePhysicianAction} directory={directory} /> : null}
       {role === "patient" ? <PatientPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} /> : null}
       {role === "caregiver" ? <CaregiverPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} /> : null}
       {role === "research" ? <ResearchPanel cases={cases.map((item) => toResearchSafeCaseView(item, { role: "researcher", researchPurposeApproved: true }))} activeView={activeView} onAction={() => showToast("Anonymized CSV export placeholder generated.")} /> : null}
@@ -698,7 +757,7 @@ function RoleSelector({ onSelect }: { onSelect: (role: RoleId) => void }) {
 
 function getInitialRoute(): RouteState {
   const route = parseRoute();
-  normalizeRoute(route.locale, route.role, true);
+  normalizeRoute(route.locale, route.role, route.view, true);
   return route;
 }
 
@@ -715,12 +774,16 @@ function parseRoute(): RouteState {
   const locale = isLocale(firstSegment) ? firstSegment : firstIsRole ? storedLocale ?? "en" : "en";
   const roleSegment = isLocale(firstSegment) ? segments[1] : firstIsRole ? firstSegment : segments[1];
   const role = roleSegment && roleSegment in slugToRole ? slugToRole[roleSegment as RoleSlug] : null;
-  return { locale, role };
+  const viewSegment = isLocale(firstSegment) ? segments[2] : firstIsRole ? segments[1] : segments[2];
+  const view = role && viewSegment && navByRole[role].some((item) => item.id === viewSegment) ? viewSegment : null;
+  return { locale, role, view };
 }
 
-function normalizeRoute(locale: Locale, role: RoleId | null, replace: boolean) {
+function normalizeRoute(locale: Locale, role: RoleId | null, view: string | null, replace: boolean) {
   const base = import.meta.env.BASE_URL; // ends with "/"
-  const target = `${base}${locale}${role ? `/${roleToSlug[role]}` : ""}`;
+  // Keep clean URLs for the default tab; only encode a sub-view when it differs.
+  const includeView = role && view && view !== defaultViews[role];
+  const target = `${base}${locale}${role ? `/${roleToSlug[role]}` : ""}${includeView ? `/${view}` : ""}`;
   if (window.location.pathname === target) return;
   const method = replace ? "replaceState" : "pushState";
   window.history[method]({}, "", target);

@@ -340,21 +340,25 @@ export function PanelCard({
   );
 }
 
-export function Timeline({ events, patientSafe = false }: { events: TimelineEvent[]; patientSafe?: boolean }) {
-  const { tv, locale } = useI18n();
+export function Timeline({ events, patientSafe = false, markCurrent = false }: { events: TimelineEvent[]; patientSafe?: boolean; markCurrent?: boolean }) {
+  const { t, tv, locale } = useI18n();
   const visibleEvents = patientSafe ? events.filter((event) => event.patientSafe) : events;
+  const lastIndex = visibleEvents.length - 1;
   return (
     <div className="timeline">
-      {visibleEvents.map((event, index) => (
-        <div className="timeline-event" key={`${event.label}-${index}`}>
-          <span className={`timeline-dot timeline-${event.tone ?? inferTimelineTone(event)}`} />
-          <div>
-            <strong>{tv(event.label)}</strong>
-            <p>{tv(event.detail)}</p>
+      {visibleEvents.map((event, index) => {
+        const isCurrent = markCurrent && index === lastIndex;
+        return (
+          <div className={`timeline-event ${isCurrent ? "timeline-event-current" : "is-done"}`} key={`${event.label}-${index}`}>
+            <span className={`timeline-dot ${isCurrent ? "timeline-current" : `timeline-${event.tone ?? inferTimelineTone(event)}`}`} />
+            <div>
+              <strong>{tv(event.label)}{isCurrent ? <span className="timeline-current-tag">{t("Current step")}</span> : null}</strong>
+              <p>{tv(event.detail)}</p>
+            </div>
+            <time>{formatTimelineDate(event.date, locale, tv)}</time>
           </div>
-          <time>{formatTimelineDate(event.date, locale, tv)}</time>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -404,7 +408,7 @@ export function CaseIdentity({ item, anonymized = false }: { item: KioCase; anon
   );
 }
 
-function GenderAvatar({ sex, label }: { sex: KioCase["sex"]; label: string }) {
+export function GenderAvatar({ sex, label }: { sex: KioCase["sex"]; label: string }) {
   const isFemale = sex === "Female";
   return (
     <span className={`avatar gender-avatar ${isFemale ? "avatar-female" : "avatar-male"}`} role="img" aria-label={label}>

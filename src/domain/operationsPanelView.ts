@@ -1,6 +1,6 @@
 import type { KioCase, TimelineEvent } from "../types";
 import { canPerformCaseAction, type AccessContext } from "./permissions";
-import type { CaseAction, CaseState } from "./caseState";
+import type { CaseAction, CaseOwnerRole, CaseState } from "./caseState";
 import { getCaseBlockers, getCurrentOwnerLabel, getNextAction } from "./caseStateSelectors";
 
 export type OperationsActionAvailability = {
@@ -19,6 +19,7 @@ export type OperationsCaseCoordinationView = {
   age: number;
   ageGroup: string;
   sex: KioCase["sex"];
+  scanDate: string;
   state: CaseState;
   stateLabel: string;
   currentOwner: string;
@@ -44,10 +45,17 @@ export type OperationsCaseCoordinationView = {
   priority: "routine" | "attention" | "blocked";
   lastUpdated: string;
   referralSource?: string;
+  imagingCenter?: string;
   assignedRadiologist: string;
   assignedNeurologist: string;
   priorImagingAvailable?: "Yes" | "No" | "Unknown";
   operationsNote?: string;
+  caregiverName?: string;
+  caregiverContact?: string;
+  caregiverInviteStatus: "Not invited" | "Invite sent" | "Active";
+  followUpType?: string;
+  followUpDue?: string;
+  followUpCoordination?: "Pending" | "Scheduled" | "Reminder sent" | "Done";
 };
 
 const operationsSafeFields = new Set<keyof OperationsCaseCoordinationView>([
@@ -57,6 +65,7 @@ const operationsSafeFields = new Set<keyof OperationsCaseCoordinationView>([
   "age",
   "ageGroup",
   "sex",
+  "scanDate",
   "state",
   "stateLabel",
   "currentOwner",
@@ -82,10 +91,17 @@ const operationsSafeFields = new Set<keyof OperationsCaseCoordinationView>([
   "priority",
   "lastUpdated",
   "referralSource",
+  "imagingCenter",
   "assignedRadiologist",
   "assignedNeurologist",
   "priorImagingAvailable",
   "operationsNote",
+  "caregiverName",
+  "caregiverContact",
+  "caregiverInviteStatus",
+  "followUpType",
+  "followUpDue",
+  "followUpCoordination",
 ]);
 
 const operationalActions: Array<{ uiAction: string; label: string; domainAction?: CaseAction; primary?: boolean }> = [
@@ -115,6 +131,7 @@ export function getOperationsCaseCoordinationView(
     age: caseRecord.age,
     ageGroup: caseRecord.ageGroup,
     sex: caseRecord.sex,
+    scanDate: caseRecord.scanDate,
     state: caseRecord.state,
     stateLabel: caseRecord.caseStatus,
     currentOwner: getCurrentOwnerLabel(caseRecord),
@@ -140,10 +157,17 @@ export function getOperationsCaseCoordinationView(
     priority: getOperationsPriority(caseRecord, operationalBlockers),
     lastUpdated: caseRecord.stateEnteredAt ?? caseRecord.timeline.at(-1)?.date ?? "Not recorded",
     referralSource: caseRecord.referralSource,
+    imagingCenter: caseRecord.imagingCenter,
     assignedRadiologist: caseRecord.assignedRadiologist,
     assignedNeurologist: caseRecord.assignedNeurologist,
     priorImagingAvailable: caseRecord.priorImagingAvailable,
     operationsNote: caseRecord.operationsNote,
+    caregiverName: caseRecord.caregiverName,
+    caregiverContact: caseRecord.caregiverContact,
+    caregiverInviteStatus: caseRecord.caregiverInviteStatus ?? "Not invited",
+    followUpType: caseRecord.followUpType,
+    followUpDue: caseRecord.followUpDue,
+    followUpCoordination: caseRecord.followUpType ? (caseRecord.followUpCoordination ?? "Pending") : undefined,
   };
 }
 
@@ -168,8 +192,15 @@ export function getOperationsOperationalTimeline(caseRecord: KioCase): TimelineE
   }));
 }
 
+// Blockers Operations can actually act on: its own steps, or chasing the patient.
+// A step in flight under another role (radiologist, physician, AI/system,
+// research/data steward) is normal progress for Operations — not a blocker.
+const OPERATIONS_BLOCKER_OWNERS = new Set<CaseOwnerRole>(["OPERATIONS", "PATIENT_CAREGIVER"]);
+
 export function getOperationsVisibleBlockers(caseRecord: KioCase): string[] {
-  const blockers = getCaseBlockers(caseRecord).filter((blocker) => blocker.blocking).map((blocker) => blocker.message);
+  const blockers = getCaseBlockers(caseRecord)
+    .filter((blocker) => blocker.blocking && OPERATIONS_BLOCKER_OWNERS.has(blocker.ownerRole))
+    .map((blocker) => blocker.message);
   if (caseRecord.blocker) blockers.unshift(caseRecord.blocker);
   return Array.from(new Set(blockers)).filter(Boolean);
 }
@@ -207,17 +238,20 @@ function getOperationsPriority(caseRecord: KioCase, operationalBlockers: string[
   return "routine";
 }
 
+// Operational status milestones (a step happened, on a date) are safe and useful
+// for Operations and differ per case — keep them. Only genuine clinical findings
+// or interpretation are neutralized, so the timeline stays case-specific.
+const CLINICAL_FINDING_PATTERN = /atroph|hippocamp|ventric|cortical|temporal lobe|percentile|z-?score|volume|biomarker|diagnos|interpret|\bfinding|lesion|moca|cognitive score/i;
+
 function getSafeOperationalTimelineLabel(label: string) {
-  if (/physician|clinical/i.test(label)) return "Physician workflow updated";
-  if (/radiologist|imaging/i.test(label)) return "Imaging review workflow updated";
-  if (/report|summary|release/i.test(label)) return "Report release workflow updated";
-  return label;
+  if (!CLINICAL_FINDING_PATTERN.test(label)) return label;
+  if (/physician|neuro|clinical/i.test(label)) return "Physician review updated";
+  if (/radiologist|imaging/i.test(label)) return "Imaging review updated";
+  return "Workflow updated";
 }
 
 function getSafeOperationalTimelineDetail(event: TimelineEvent) {
-  const text = `${event.label} ${event.detail}`;
-  if (/physician|clinical|interpretation/i.test(text)) return "Clinical review status changed. Interpretation details are hidden from Operations.";
-  if (/radiologist|imaging|segmentation|quantitative/i.test(text)) return "Imaging review status changed. Clinical evidence details are hidden from Operations.";
-  if (/report|summary|release/i.test(text)) return "Report/release administration status changed. Report internals are hidden from Operations.";
-  return event.detail;
+  return CLINICAL_FINDING_PATTERN.test(`${event.label} ${event.detail}`)
+    ? "Clinical detail is hidden from the Operations view."
+    : event.detail;
 }

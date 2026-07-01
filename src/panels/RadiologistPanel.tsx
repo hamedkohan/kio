@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "../i18n";
-import { EmptyState, MetricCard, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip } from "../components/ui";
+import type { KioCase } from "../types";
+import type { Directory } from "../data/directory";
+import { CaseIdentity, EmptyState, MetricCard, PageHeader, PanelCard, ReportReadinessChecklist, StatusChip } from "../components/ui";
 import { LongitudinalPanel, QuantitativeMetricsPanel, VisualScoresPanel } from "../components/DemoReportWorkspace";
 import { CentileCurvesSection } from "../components/CentileCurves";
 import { CaseContextBar } from "../components/CaseContextBar";
@@ -15,6 +17,7 @@ type Props = {
   selectedCaseId: string;
   onSelectCase: (id: string) => void;
   onAction: (action: string, caseId: string, value?: string) => void;
+  directory: Directory;
 };
 
 export const radiologistNav = [
@@ -31,10 +34,17 @@ export const radiologistNav = [
 
 // The Radiologist panel is driven by one active imported demo case (selectedCaseId).
 // The sticky case context bar is the only case-changing mechanism inside the workflow.
-export function RadiologistPanel({ activeView, onAction }: Props) {
+export function RadiologistPanel({ caseViews, activeView, onAction, directory }: Props) {
   const { t } = useI18n();
   const demoCaseSummaries = useMemo(() => getDemoCaseSummaries(), []);
   const [selectedCaseId, setSelectedCaseId] = useState(demoCaseSummaries[0]?.caseRecord.case_id ?? "");
+  // Operational cases routed to radiology (separate from the imported demo evidence pack).
+  const radCases = useMemo(() => caseViews.map((view) => view.caseRecord), [caseViews]);
+  const radiologists = useMemo(() => directory.clinicians.filter((clinician) => clinician.role === "radiologist" && clinician.active), [directory]);
+  const [actingAs, setActingAs] = useState(() => radiologists[0]?.name ?? "");
+  const [myCasesOnly, setMyCasesOnly] = useState(false);
+  const forActing = (items: KioCase[]) => (myCasesOnly && actingAs ? items.filter((item) => item.assignedRadiologist === actingAs) : items);
+  const assignedToMe = radCases.filter((item) => item.assignedRadiologist === actingAs);
   const detail =
     getDemoCaseDetail(selectedCaseId) ??
     (demoCaseSummaries[0] ? getDemoCaseDetail(demoCaseSummaries[0].caseRecord.case_id) : undefined);
@@ -51,11 +61,34 @@ export function RadiologistPanel({ activeView, onAction }: Props) {
   );
 
   if (activeView === "queue") {
+    const awaiting = forActing(radCases.filter((item) => /review pending|needs quality review|quality review/i.test(item.radiologistStatus)));
+    const inReview = forActing(radCases.filter((item) => /review in progress|reprocess requested/i.test(item.radiologistStatus)));
+    const reviewed = forActing(radCases.filter((item) => /radiologist reviewed/i.test(item.radiologistStatus)));
     return (
       <>
-        <PageHeader eyebrow="Radiologist worklist" title="Review Queue" description="Imported MRI cases awaiting or completing radiologist review. Select a case to open it in the review workflow." />
-        {contextBar}
-        <ReviewQueue summaries={demoCaseSummaries} selectedCaseId={activeCaseId} onSelectCase={setSelectedCaseId} />
+        <PageHeader eyebrow="Radiologist worklist" title="Review Queue" description="Operational cases routed to radiology, filtered to the radiologist you are acting as. Rich imported review evidence is below." />
+        <div className="acting-bar">
+          <label className="acting-as">
+            <span>{t("Acting as")}</span>
+            {radiologists.length ? (
+              <select value={actingAs} onChange={(event) => setActingAs(event.target.value)}>
+                {radiologists.map((clinician) => <option key={clinician.id} value={clinician.name}>{clinician.name}</option>)}
+              </select>
+            ) : <strong>{t("No clinician in directory")}</strong>}
+          </label>
+          <div className="acting-toggle" role="group" aria-label={t("Case scope")}>
+            <button type="button" className={!myCasesOnly ? "active" : ""} aria-pressed={!myCasesOnly} onClick={() => setMyCasesOnly(false)}>{t("All cases")} <em>{radCases.length}</em></button>
+            <button type="button" className={myCasesOnly ? "active" : ""} aria-pressed={myCasesOnly} onClick={() => setMyCasesOnly(true)}>{t("My cases")} <em>{assignedToMe.length}</em></button>
+          </div>
+        </div>
+        {myCasesOnly ? <RadWorklistGroup title="Assigned to you" subtitle="Every case assigned to you, at any stage — visible from the moment Operations assigns it" items={assignedToMe} empty="No cases are assigned to you yet." /> : null}
+        <RadWorklistGroup title="Awaiting your review" subtitle="Routed to radiology — ready or needing quality review" items={awaiting} empty="No cases awaiting review." />
+        <RadWorklistGroup title="In review" subtitle="Review in progress or reprocess requested" items={inReview} empty="No cases in review." />
+        <RadWorklistGroup title="Recently reviewed" subtitle="Radiologist review completed" items={reviewed} empty="No reviewed cases." />
+        <PanelCard title="Imported review evidence" subtitle="Rich MRI report dataset used by the deep review tabs — separate from operational routing">
+          {contextBar}
+          <ReviewQueue summaries={demoCaseSummaries} selectedCaseId={activeCaseId} onSelectCase={setSelectedCaseId} />
+        </PanelCard>
       </>
     );
   }
@@ -157,6 +190,28 @@ type CaseProfile = {
   corticometryMetrics: DemoQuantitativeMetric[];
   kindLabel: string;
 };
+
+function RadWorklistGroup({ title, subtitle, items, empty }: { title: string; subtitle: string; items: KioCase[]; empty: string }) {
+  const { t } = useI18n();
+  return (
+    <PanelCard title={title} subtitle={subtitle}>
+      {items.length ? <div className="card-grid two">{items.map((item) => <RadCaseCard key={item.id} item={item} />)}</div> : <p className="muted">{t(empty)}</p>}
+    </PanelCard>
+  );
+}
+
+function RadCaseCard({ item }: { item: KioCase }) {
+  const { t, tv } = useI18n();
+  return (
+    <article className="rad-op-card">
+      <CaseIdentity item={item} />
+      <div className="rad-op-card-meta">
+        <StatusChip label={item.radiologistStatus} />
+        <small>{t("MRI")}: {tv(item.mriStatus)} · {t("Assigned")}: {tv(item.assignedRadiologist)}</small>
+      </div>
+    </article>
+  );
+}
 
 function getCaseProfile(detail: DemoCaseDetail): CaseProfile {
   const reportTypes = detail.reports.map((report) => String(report.report_type));

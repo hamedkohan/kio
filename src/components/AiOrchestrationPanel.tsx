@@ -1,11 +1,14 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useI18n } from "../i18n";
 import { EmptyState, PanelCard, StatusChip } from "./ui";
 import { dkRegionLabel } from "../api/dkRegions";
 import { useImagingAnalysis } from "../api/imagingAnalysis";
 import { orchestrateCase, type OrchestrationRun, type ModuleRunStatus } from "../domain/aiOrchestration";
-import { getDemoCaseSummaries } from "../data/kio-demo/repository";
 import { PHASE_LABELS } from "./CaseJourney";
+
+// An operational case whose MRI has been processed, so the AI registry can run
+// over its imaging analysis. `analysisId` resolves the bundled analysis contract.
+export type RuntimeCase = { caseId: string; label: string; analysisId: string };
 
 const STATUS_TONE: Record<ModuleRunStatus, string> = {
   succeeded: "ready",
@@ -20,38 +23,44 @@ const STATUS_LABEL: Record<ModuleRunStatus, string> = {
   failed: "Failed",
 };
 
-// Runtime that executes the AI module registry over a case's imaging analysis,
-// showing a per-module run log. Active modules run; planned modules are skipped
-// registry slots; validation gates downstream modules.
-export function AiOrchestrationPanel() {
+// Runtime that executes the AI module registry over an OPERATIONAL case's imaging
+// analysis, showing a per-module run log. Active modules run; planned modules are
+// skipped registry slots; validation gates downstream modules.
+export function AiOrchestrationPanel({ cases }: { cases: RuntimeCase[] }) {
   const { t, tv, formatNumber } = useI18n();
-  const summaries = useMemo(() => getDemoCaseSummaries(), []);
-  const [caseId, setCaseId] = useState(summaries.find((s) => s.longitudinal)?.caseRecord.case_id ?? summaries[0]?.caseRecord.case_id ?? "");
-  const { analysis, loading } = useImagingAnalysis(caseId);
+  const [caseId, setCaseId] = useState(cases[0]?.caseId ?? "");
+  const selectedCase = cases.find((entry) => entry.caseId === caseId) ?? cases[0];
+  const { analysis, loading } = useImagingAnalysis(selectedCase?.analysisId);
   const [run, setRun] = useState<OrchestrationRun | null>(null);
 
-  const humanize = (summary: string, value: string) => {
+  const humanize = (value: string) => {
     // Make DK region machine-names in outputs readable.
     const match = value.match(/^([a-z]+) \((P\d+)\)$/);
     if (match) return `${t(dkRegionLabel(match[1]))} (${match[2]})`;
     return value;
   };
 
+  if (!cases.length) {
+    return (
+      <PanelCard title="AI orchestration runtime" subtitle="Execute the registry over a case · active modules run, planned modules are skipped, validation gates downstream">
+        <EmptyState title={t("No case ready to run")} message={t("The AI registry runs over operational cases whose MRI has been processed. None are ready right now.")} />
+      </PanelCard>
+    );
+  }
+
   return (
     <PanelCard
       title="AI orchestration runtime"
-      subtitle="Execute the registry over a case · active modules run, planned modules are skipped, validation gates downstream"
+      subtitle="Execute the registry over an operational case with a processed MRI · active modules run, planned modules are skipped, validation gates downstream"
       action={
         <div className="button-row">
           <select className="rccb-select" aria-label={t("Imaging case")} value={caseId} onChange={(event) => { setCaseId(event.target.value); setRun(null); }}>
-            {summaries.map((summary) => (
-              <option key={summary.caseRecord.case_id} value={summary.caseRecord.case_id}>
-                {(summary.patient.name_fa || summary.patient.name)} · {summary.caseRecord.case_id}
-              </option>
+            {cases.map((entry) => (
+              <option key={entry.caseId} value={entry.caseId}>{entry.label}</option>
             ))}
           </select>
           <button type="button" className="primary-button" disabled={!analysis || loading} onClick={() => analysis && setRun(orchestrateCase(analysis))}>
-            {t("Run AI pipeline")}
+            {loading ? t("Loading analysis…") : t("Run AI pipeline")}
           </button>
         </div>
       }
@@ -61,7 +70,7 @@ export function AiOrchestrationPanel() {
       ) : (
         <>
           <div className="status-list">
-            <div><span>{t("Case")}</span><strong dir="ltr">{run.caseId}</strong></div>
+            <div><span>{t("Case")}</span><strong>{tv(selectedCase?.label ?? run.caseId)}</strong></div>
             <div><span>{t("Succeeded")}</span><strong>{formatNumber(run.succeeded)}</strong></div>
             <div><span>{t("Skipped")}</span><strong>{formatNumber(run.skipped)}</strong></div>
             {run.blocked ? <div><span>{t("Blocked")}</span><strong>{formatNumber(run.blocked)}</strong></div> : null}
@@ -80,7 +89,7 @@ export function AiOrchestrationPanel() {
                 {result.outputs.length ? (
                   <div className="ai-run-outputs">
                     {result.outputs.map((output) => (
-                      <span key={output.label}><em>{t(output.label)}</em>{humanize(result.summary, output.value)}</span>
+                      <span key={output.label}><em>{t(output.label)}</em>{humanize(output.value)}</span>
                     ))}
                   </div>
                 ) : null}

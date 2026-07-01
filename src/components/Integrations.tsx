@@ -36,6 +36,9 @@ export function Integrations({ caseRecord, runtimeCases = [] }: { caseRecord?: I
         description="External services and AI capabilities mapped to the case journey. Connection status is shown per integration; AI is a registry of pluggable modules, not one fixed pipeline."
       />
 
+      {/* Paid analysis step — the primary action, kept in the first fold. */}
+      <AiOrchestrationPanel cases={runtimeCases} />
+
       <PanelCard
         title="Integration map"
         subtitle={caseRecord ? "Engagement is shown relative to the selected case" : "Connection status per external service"}
@@ -119,8 +122,6 @@ export function Integrations({ caseRecord, runtimeCases = [] }: { caseRecord?: I
           <p>{t("Active modules run in the current demo. Planned modules are registry slots that can be enabled without changing the journey. AI output is decision support and is always validated by a clinician before release.")}</p>
         </div>
       </PanelCard>
-
-      <AiOrchestrationPanel cases={runtimeCases} />
     </>
   );
 }

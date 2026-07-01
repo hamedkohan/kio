@@ -14,7 +14,7 @@ export type RuntimeCase = { caseId: string; label: string; analysisId: string };
 // is a deliberate, staged processing experience for the paid analysis step, so it
 // reads like real imaging work is happening. Raise later (e.g. 30_000–60_000) to
 // mirror true pipeline latency; everything else adapts automatically.
-const PROCESSING_DURATION_MS = 5000;
+const PROCESSING_DURATION_MS = 15000;
 
 // Cosmetic imaging-pipeline stages shown before the real module results, so the
 // run reads like an MRI actually going through morphometry. These represent the

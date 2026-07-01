@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+  Source for public/og-image.png (the social link-preview card).
+  Edit this file, then regenerate the PNG:
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
+      --window-size=1200,630 --screenshot=public/og-image.png \
+      "file://$PWD/scripts/og-image.html"
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap");
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1200px; height: 630px; }
+      body {
+        font-family: "Inter", -apple-system, system-ui, sans-serif;
+        color: #eaf5f1;
+        background:
+          radial-gradient(circle at 82% 12%, rgba(255,255,255,0.14), transparent 42%),
+          linear-gradient(135deg, #0c4f49 0%, #176c64 62%, #1f8378 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 96px 104px;
+      }
+      .brand { display: flex; align-items: center; gap: 26px; margin-bottom: 44px; }
+      .mark {
+        width: 108px; height: 108px;
+        display: grid; place-items: center;
+        font-size: 62px; font-weight: 800; color: #0c4f49;
+        background: #f4fbf8; border-radius: 26px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      }
+      .brand span { font-size: 52px; font-weight: 800; letter-spacing: -0.01em; }
+      h1 { font-size: 74px; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; max-width: 900px; }
+      p.tag { margin-top: 28px; font-size: 32px; font-weight: 400; color: #bfe0d6; max-width: 860px; line-height: 1.4; }
+      .foot { margin-top: 56px; display: flex; gap: 14px; flex-wrap: wrap; }
+      .chip {
+        padding: 12px 22px; font-size: 22px; font-weight: 600; color: #eaf5f1;
+        background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <div class="mark">K</div>
+      <span>Kio</span>
+    </div>
+    <h1>AI-assisted neuroimaging reporting &amp; quantitative biomarkers</h1>
+    <p class="tag">Role-based clinical workflow for cognitive-disorder MRI — from intake to specialist-reviewed release.</p>
+    <div class="foot">
+      <div class="chip">Operations · Radiology · Neurology</div>
+      <div class="chip">Patient &amp; caregiver portals</div>
+    </div>
+  </body>
+</html>

@@ -123,12 +123,22 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
     }
   };
 
-  const verify = (event: React.FormEvent) => {
-    event.preventDefault();
+  const verifyCode = (value: string) => {
     setError("");
-    const user = verifyOtp(identity, code);
+    const user = verifyOtp(identity, value);
     if (user) onAuthenticated(user);
     else setError(t("Incorrect code. Please try again."));
+  };
+
+  const onCodeChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 4);
+    setCode(digits);
+    if (digits.length === 4) verifyCode(digits); // auto-submit on the 4th digit
+  };
+
+  const verify = (event: React.FormEvent) => {
+    event.preventDefault();
+    verifyCode(code);
   };
 
   const reset = () => {
@@ -174,7 +184,7 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
 
       <label className="login-field">
         <span>{t("One-time code")}</span>
-        <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} placeholder="1234" value={code} onChange={(event) => setCode(event.target.value)} required autoFocus />
+        <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={4} value={code} onChange={(event) => onCodeChange(event.target.value)} required autoFocus />
       </label>
 
       {error ? <p className="login-error" role="alert">{error}</p> : null}

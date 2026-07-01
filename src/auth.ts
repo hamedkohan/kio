@@ -26,14 +26,13 @@ export type AppUser = {
 
 // --- User registry -------------------------------------------------------
 // Master account: full access to every panel.
-// TODO: replace the placeholder password below with the real one. To do that,
-// run the hash command above with the desired password and paste the result
-// as `passwordHash`. The temporary password is documented for the team.
+// To change the password, run the hash command above with the new password and
+// paste the result as `passwordHash`.
 export const USERS: AppUser[] = [
   {
     username: "kio",
-    // Temporary placeholder password: "kio-demo-2026"
-    passwordHash: "fb65aa2a40295cebe413d318f88672ea9c22d3bd8e5dae8e30f2c881af00619c",
+    // Master password: "kiomed2026"
+    passwordHash: "90ec772106c916b27638afba73e7df3718a960943b5176a8cc26d437a490a067",
     roles: "all",
     displayName: "Kio (master access)",
   },

@@ -36,6 +36,13 @@ export const USERS: AppUser[] = [
     roles: "all",
     displayName: "Kio (master access)",
   },
+  {
+    username: "radiologist",
+    // Password: "radiomed2026"
+    passwordHash: "f517054dcac66c2029e2efe797ea98fc1602053c5c853a4394d4987465c29075",
+    roles: ["radiologist"],
+    displayName: "Radiologist",
+  },
 ];
 
 const AUTH_STORAGE_KEY = "kio.auth.user";

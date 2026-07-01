@@ -4,6 +4,14 @@ import { authenticate, getOtpUsers, requestOtp, verifyOtp, type AppUser } from "
 
 type Mode = "staff" | "otp";
 
+// Convert Persian (۰-۹) and Arabic-Indic (٠-٩) digits to ASCII 0-9 so numbers
+// typed with a non-Latin keyboard are accepted and stored as "1234".
+function toAsciiDigits(input: string): string {
+  return input
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660));
+}
+
 // Bilingual sign-in gate shown before the role selector.
 // Staff sign in with username + password; patients/caregivers with phone + OTP.
 export function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void }) {
@@ -162,7 +170,7 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
 
         <label className="login-field">
           <span>{t("Mobile number")}</span>
-          <input type="tel" inputMode="tel" autoComplete="tel" placeholder="0912 000 0001" value={phone} onChange={(event) => setPhone(event.target.value)} required />
+          <input type="tel" inputMode="tel" autoComplete="tel" placeholder="0912 000 0001" value={phone} onChange={(event) => setPhone(toAsciiDigits(event.target.value))} required />
         </label>
 
         {error ? <p className="login-error" role="alert">{error}</p> : null}
@@ -206,7 +214,7 @@ function OtpCodeInput({ length, value, onChange, onComplete }: { length: number;
   const focusBox = (index: number) => refs.current[index]?.focus();
 
   const handleChange = (index: number, raw: string) => {
-    const digit = (raw.match(/\d/g) ?? []).pop();
+    const digit = (toAsciiDigits(raw).match(/\d/g) ?? []).pop();
     if (!digit) return; // ignore non-numeric input
     const next = [...digits];
     next[index] = digit;
@@ -234,7 +242,7 @@ function OtpCodeInput({ length, value, onChange, onComplete }: { length: number;
   };
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    const pasted = (event.clipboardData.getData("text").match(/\d/g) ?? []).slice(0, length);
+    const pasted = (toAsciiDigits(event.clipboardData.getData("text")).match(/\d/g) ?? []).slice(0, length);
     if (!pasted.length) return;
     event.preventDefault();
     const next = Array.from({ length }, (_, index) => pasted[index] ?? "");

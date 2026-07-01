@@ -11,6 +11,7 @@ export function AppShell({
   navItems,
   onNavigate,
   onRoleHome,
+  onLogout,
   children,
   toast,
 }: {
@@ -19,6 +20,7 @@ export function AppShell({
   navItems: NavItem[];
   onNavigate: (view: string) => void;
   onRoleHome: () => void;
+  onLogout?: () => void;
   children: ReactNode;
   toast?: string;
 }) {
@@ -59,6 +61,7 @@ export function AppShell({
           <strong>{tv(definition.permission)}</strong>
         </div>
         <button className="switch-role" type="button" onClick={onRoleHome}>{t("Switch role")}</button>
+        {onLogout ? <button className="logout-button sidebar-logout" type="button" onClick={onLogout}>{t("Log out")}</button> : null}
       </aside>
       <div className="app-main">
         <div className="app-topbar">

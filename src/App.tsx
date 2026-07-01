@@ -21,6 +21,8 @@ import {
 } from "./data";
 import { initialDirectory, upsertById, type Directory, type DirectoryClinician, type ImagingCenter } from "./data/directory";
 import { I18nProvider, getDirection, getStoredLocale, isLocale, roleToSlug, slugToRole, storeLocale, type Locale, type RoleSlug, useI18n } from "./i18n";
+import { LoginScreen } from "./components/LoginScreen";
+import { canAccessRole, clearAuth, getStoredUser, storeAuth, type AppUser } from "./auth";
 import type { CreateCaseFormValues, KioCase, RoleId } from "./types";
 import { OperationsPanel, operationsNav } from "./panels/OperationsPanel";
 import { RadiologistPanel, radiologistNav } from "./panels/RadiologistPanel";
@@ -61,6 +63,7 @@ type RouteState = {
 
 export default function App() {
   const initialRoute = getInitialRoute();
+  const [user, setUser] = useState<AppUser | null>(() => getStoredUser());
   const [locale, setLocaleState] = useState<Locale>(initialRoute.locale);
   const [role, setRole] = useState<RoleId | null>(initialRoute.role);
   const [activeViews, setActiveViews] = useState<Record<RoleId, string>>(() =>
@@ -92,6 +95,15 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem(SELECTED_CASE_STORAGE_KEY, selectedCaseId);
   }, [selectedCaseId]);
+
+  // If the signed-in user cannot open the current role (e.g. a scoped user lands
+  // on a role-specific URL), send them back to the role selector.
+  useEffect(() => {
+    if (user && role && !canAccessRole(user, role)) {
+      setRole(null);
+      normalizeRoute(locale, null, null, true);
+    }
+  }, [user, role, locale]);
 
   // Persist and restore scroll position per page (locale + role + sub-view).
   const scrollKey = `${SCROLL_STORAGE_PREFIX}${role ?? "home"}:${currentView ?? ""}`;
@@ -128,6 +140,18 @@ export default function App() {
     setLocaleState(nextLocale);
     storeLocale(nextLocale);
     normalizeRoute(nextLocale, role, currentView, false);
+  };
+
+  const handleAuthenticated = (nextUser: AppUser) => {
+    storeAuth(nextUser.username);
+    setUser(nextUser);
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    setUser(null);
+    setRole(null);
+    normalizeRoute(locale, null, null, false);
   };
 
   const showToast = (message: string) => {
@@ -639,9 +663,18 @@ export default function App() {
     return cases[0].id;
   };
 
+  if (!user) return (
+    <I18nProvider locale={locale} setLocale={switchLocale}>
+      <LoginScreen onAuthenticated={handleAuthenticated} />
+    </I18nProvider>
+  );
+
+  // A signed-in user may only open panels their access grants. Master = all.
+  const accessibleRoles = (Object.keys(roleDefinitions) as RoleId[]).filter((candidate) => canAccessRole(user, candidate));
+
   if (!role) return (
     <I18nProvider locale={locale} setLocale={switchLocale}>
-      <RoleSelector onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, defaultViews[nextRole], false); }} />
+      <RoleSelector roles={accessibleRoles} userName={user.displayName ?? user.username} onLogout={handleLogout} onSelect={(nextRole) => { setRole(nextRole); setSelectedCaseId(defaultCaseForRole(nextRole)); setActiveViews((current) => ({ ...current, [nextRole]: defaultViews[nextRole] })); normalizeRoute(locale, nextRole, defaultViews[nextRole], false); }} />
     </I18nProvider>
   );
 
@@ -673,11 +706,11 @@ export default function App() {
   return (
     <I18nProvider locale={locale} setLocale={switchLocale}>
       {isAppLike ? (
-        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} toast={toast} notifications={patientNotifications}>
+        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} toast={toast} notifications={patientNotifications}>
           {shellChildren}
         </MobileAppShell>
       ) : (
-        <AppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} toast={toast}>
+        <AppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} toast={toast}>
           {shellChildren}
         </AppShell>
       )}
@@ -722,24 +755,28 @@ function canSavePhysicianNote(caseRecord: KioCase | undefined) {
   return { allowed: decision.allowed, reason: decision.reason ?? "Action not allowed for this role." };
 }
 
-function RoleSelector({ onSelect }: { onSelect: (role: RoleId) => void }) {
+function RoleSelector({ roles, userName, onLogout, onSelect }: { roles: RoleId[]; userName: string; onLogout: () => void; onSelect: (role: RoleId) => void }) {
   const { locale, dir, setLocale, t, tv } = useI18n();
   return (
     <main className="role-selector" lang={locale} dir={dir}>
       <header className="selector-header">
         <div className="selector-topline">
           <div className="selector-brand"><span>K</span><strong>{t("Kio")}</strong></div>
-          <label className="language-switcher selector-language">
-            <span>{t("Language")}</span>
-            <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
-              <option value="en">English</option>
-              <option value="fa">فارسی</option>
-            </select>
-          </label>
+          <div className="selector-account">
+            <span className="selector-user" title={userName}>{userName}</span>
+            <label className="language-switcher selector-language">
+              <span>{t("Language")}</span>
+              <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
+                <option value="en">English</option>
+                <option value="fa">فارسی</option>
+              </select>
+            </label>
+            <button type="button" className="logout-button" onClick={onLogout}>{t("Log out")}</button>
+          </div>
         </div>
         <p className="eyebrow">{t("Clickable product prototype")}</p><h1>{t("Choose a role-based workspace")}</h1><p>{t("Kio is an AI-assisted neuroimaging decision-support workflow. Each role sees the same case through a different permission-aware experience.")}</p></header>
       <section className="role-grid">
-        {(Object.keys(roleDefinitions) as RoleId[]).map((role) => {
+        {roles.map((role) => {
           const definition = roleDefinitions[role];
           return (
             <button key={role} type="button" className={`role-card accent-${definition.accent}`} onClick={() => onSelect(role)}>

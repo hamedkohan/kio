@@ -36,6 +36,16 @@ export type RoleSlug = keyof typeof slugToRole;
 const en: Record<string, string> = {};
 
 const fa: Record<string, string> = {
+  // Login gate
+  "Sign in to continue": "برای ادامه وارد شوید",
+  "This workspace is private. Please sign in with your access credentials.": "این فضای کاری خصوصی است. لطفاً با اطلاعات دسترسی خود وارد شوید.",
+  "Username": "نام کاربری",
+  "Password": "گذرواژه",
+  "Sign in": "ورود",
+  "Signing in…": "در حال ورود…",
+  "Incorrect username or password.": "نام کاربری یا گذرواژه نادرست است.",
+  "Log out": "خروج",
+  "Prototype access gate — not for real patient data": "دروازه‌ی دسترسی نمونه‌ی اولیه — برای داده‌ی واقعی بیمار نیست",
   // Patient/Caregiver modern home
   "Patient-safe release path": "مسیر انتشار امن برای بیمار",
   "Your case status": "وضعیت پرونده‌ی شما",

@@ -27,6 +27,7 @@ export function MobileAppShell({
   navItems,
   onNavigate,
   onRoleHome,
+  onLogout,
   children,
   toast,
   notifications = [],
@@ -36,6 +37,7 @@ export function MobileAppShell({
   navItems: NavItem[];
   onNavigate: (view: string) => void;
   onRoleHome: () => void;
+  onLogout?: () => void;
   children: ReactNode;
   toast?: string;
   notifications?: AppNotification[];
@@ -68,6 +70,7 @@ export function MobileAppShell({
           {locales.map((item) => (
             <button key={item} type="button" className={locale === item ? "active" : ""} aria-pressed={locale === item} onClick={() => setLocale(item)}>{localeLabels[item]}</button>
           ))}
+          {onLogout ? <button type="button" className="phone-logout" onClick={onLogout}>{t("Log out")}</button> : null}
         </div>
 
         <main className="phone-content">{children}</main>

@@ -50,6 +50,13 @@ export const USERS: AppUser[] = [
     roles: ["physician"],
     displayName: "Physician",
   },
+  {
+    username: "operations",
+    // Password: "opsmed2026"
+    passwordHash: "3d926ad75fe11f9ed9fdc3c7e83d91590ebbf5aa1798b52900f765494f16b038",
+    roles: ["operations"],
+    displayName: "Operations",
+  },
 ];
 
 const AUTH_STORAGE_KEY = "kio.auth.user";

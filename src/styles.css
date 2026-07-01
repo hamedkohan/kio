@@ -4598,3 +4598,36 @@ body[data-locale="fa"] .ops-focus-go { transform: scaleX(-1); }
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
+
+/* Collapsible reference sections (Integration map, AI module registry) */
+.reference-section {
+  margin-block: 1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.reference-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.4rem;
+  cursor: pointer;
+  list-style: none;
+}
+.reference-summary::-webkit-details-marker { display: none; }
+.reference-summary h2 { margin: 0; font-size: 1.02rem; letter-spacing: -0.01em; }
+.reference-summary p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.8rem; }
+.reference-summary:hover { background: #fbfcfb; }
+.reference-chevron {
+  flex: none;
+  inline-size: 0.62rem;
+  block-size: 0.62rem;
+  border-inline-end: 2px solid var(--muted);
+  border-block-end: 2px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+.reference-section[open] .reference-chevron { transform: rotate(-135deg); }
+.reference-body { padding: 0 1.4rem 1.3rem; }

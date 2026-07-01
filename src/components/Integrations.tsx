@@ -8,7 +8,7 @@ import {
   INTEGRATION_STATUS_TONE,
 } from "../data/integrations";
 import { useI18n } from "../i18n";
-import { PageHeader, PanelCard, StatusChip } from "./ui";
+import { PageHeader, StatusChip } from "./ui";
 import { PHASE_LABELS, PHASE_ORDER } from "./CaseJourney";
 import { AiOrchestrationPanel, type RuntimeCase } from "./AiOrchestrationPanel";
 
@@ -39,17 +39,15 @@ export function Integrations({ caseRecord, runtimeCases = [] }: { caseRecord?: I
       {/* Paid analysis step — the primary action, kept in the first fold. */}
       <AiOrchestrationPanel cases={runtimeCases} />
 
-      <PanelCard
-        title="Integration map"
-        subtitle={caseRecord ? "Engagement is shown relative to the selected case" : "Connection status per external service"}
-      >
-        {caseRecord && currentPhase ? (
-          <div className="integration-anchor">
-            <span>{t("Relative to")}</span>
-            <strong>{caseRecord.caseCode ? <span dir="ltr">{caseRecord.caseCode}</span> : null}{caseRecord.caseCode && caseRecord.patientDisplayName ? " · " : ""}{caseRecord.patientDisplayName ? tv(caseRecord.patientDisplayName) : null}</strong>
-            <StatusChip label={PHASE_LABELS[currentPhase]} tone="processing" />
+      <details className="reference-section">
+        <summary className="reference-summary">
+          <div>
+            <h2>{t("Integration map")}</h2>
+            <p>{t("Reference · external services and their connection status — informational, not wired live")}</p>
           </div>
-        ) : null}
+          <span className="reference-chevron" aria-hidden="true" />
+        </summary>
+        <div className="reference-body">
         <div className="integration-grid">
           {INTEGRATIONS.map((integration) => {
             const phaseIndex = PHASE_ORDER.indexOf(integration.phase);
@@ -82,9 +80,18 @@ export function Integrations({ caseRecord, runtimeCases = [] }: { caseRecord?: I
           <strong>{t("Prototype connectivity")}</strong>
           <p>{t("Connected services exchange live data. Mock services use the designed contract with demo data. Planned services are mapped but not yet wired.")}</p>
         </div>
-      </PanelCard>
+        </div>
+      </details>
 
-      <PanelCard title="AI module registry" subtitle="Pluggable AI capabilities across the lifecycle">
+      <details className="reference-section">
+        <summary className="reference-summary">
+          <div>
+            <h2>{t("AI module registry")}</h2>
+            <p>{t("Reference · pluggable AI capabilities across the lifecycle and their status")}</p>
+          </div>
+          <span className="reference-chevron" aria-hidden="true" />
+        </summary>
+        <div className="reference-body">
         <div className="table-wrap">
           <table className="ai-registry-table">
             <thead>
@@ -121,7 +128,8 @@ export function Integrations({ caseRecord, runtimeCases = [] }: { caseRecord?: I
           <strong>{t("AI orchestration")}</strong>
           <p>{t("Active modules run in the current demo. Planned modules are registry slots that can be enabled without changing the journey. AI output is decision support and is always validated by a clinician before release.")}</p>
         </div>
-      </PanelCard>
+        </div>
+      </details>
     </>
   );
 }

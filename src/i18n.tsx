@@ -139,6 +139,8 @@ const fa: Record<string, string> = {
   "Caudal anterior cingulate": "سینگولیت قدامی کودال",
   "Posterior cingulate": "سینگولیت خلفی",
   "Isthmus cingulate": "سینگولیت ایسموس",
+  "Reference · external services and their connection status — informational, not wired live": "مرجع · سرویس‌های بیرونی و وضعیت اتصالشان — توضیحی، هنوز به‌صورت زنده وصل نشده",
+  "Reference · pluggable AI capabilities across the lifecycle and their status": "مرجع · قابلیت‌های افزودنی AI در سراسر چرخه‌ی عمر و وضعیتشان",
   // AI orchestration runtime — staged processing
   "Analyzing MRI study…": "در حال تحلیل مطالعه‌ی MRI…",
   "Running AI morphometry and quality validation": "در حال اجرای مورفومتری AI و اعتبارسنجی کیفیت",

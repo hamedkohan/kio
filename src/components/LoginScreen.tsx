@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { localeLabels, locales, useI18n } from "../i18n";
-import { authenticate, getOtpUsers, requestOtp, verifyOtp, SIMULATED_OTP, type AppUser } from "../auth";
+import { authenticate, getOtpUsers, requestOtp, verifyOtp, type AppUser } from "../auth";
 
 type Mode = "staff" | "otp";
 
@@ -103,8 +103,11 @@ function StaffForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => vo
   );
 }
 
+const OTP_USERS = getOtpUsers();
+
 function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void }) {
-  const { t } = useI18n();
+  const { t, tv } = useI18n();
+  const [identity, setIdentity] = useState(OTP_USERS[0]?.username ?? "patient");
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -116,14 +119,14 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
     if (requestOtp(phone)) {
       setStep("code");
     } else {
-      setError(t("We couldn't find that mobile number. Please check and try again."));
+      setError(t("Please enter your mobile number."));
     }
   };
 
   const verify = (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
-    const user = verifyOtp(phone, code);
+    const user = verifyOtp(identity, code);
     if (user) onAuthenticated(user);
     else setError(t("Incorrect code. Please try again."));
   };
@@ -137,6 +140,20 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
   if (step === "phone") {
     return (
       <form className="login-form" onSubmit={sendCode}>
+        <div className="login-identity" role="group" aria-label={t("I am signing in as")}>
+          {OTP_USERS.map((user) => (
+            <button
+              key={user.username}
+              type="button"
+              className={identity === user.username ? "active" : ""}
+              aria-pressed={identity === user.username}
+              onClick={() => setIdentity(user.username)}
+            >
+              {tv(user.displayName ?? user.username)}
+            </button>
+          ))}
+        </div>
+
         <p className="login-lead">{t("Enter your mobile number. We'll send you a one-time code by SMS.")}</p>
 
         <label className="login-field">
@@ -147,8 +164,6 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
         {error ? <p className="login-error" role="alert">{error}</p> : null}
 
         <button type="submit" className="login-submit">{t("Send code")}</button>
-
-        <OtpDemoHint />
       </form>
     );
   }
@@ -166,25 +181,6 @@ function OtpForm({ onAuthenticated }: { onAuthenticated: (user: AppUser) => void
 
       <button type="submit" className="login-submit">{t("Verify & sign in")}</button>
       <button type="button" className="login-linkbutton" onClick={reset}>{t("Use a different number")}</button>
-
-      <OtpDemoHint />
     </form>
-  );
-}
-
-// Demo aid: no SMS provider is connected, so show the registered numbers and the
-// fixed code. Remove this block once real OTP delivery is wired up.
-function OtpDemoHint() {
-  const { t, tv } = useI18n();
-  return (
-    <div className="login-demo-hint">
-      <strong>{t("Demo mode")}</strong>
-      <p>{t("SMS is not connected yet. Use one of these numbers and code {code}.").replace("{code}", SIMULATED_OTP)}</p>
-      <ul>
-        {getOtpUsers().map((user) => (
-          <li key={user.username}><span>{tv(user.displayName ?? user.username)}</span><code>{user.phone}</code></li>
-        ))}
-      </ul>
-    </div>
   );
 }

@@ -127,31 +127,24 @@ export async function authenticate(username: string, password: string): Promise<
 // code against the stored one instead of this constant.
 export const SIMULATED_OTP = "1234";
 
-// Digits only, so "0912 000 0001" and "09120000001" compare equal.
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, "");
-}
-
-function findUserByPhone(phone: string): AppUser | undefined {
-  const normalized = normalizePhone(phone);
-  if (!normalized) return undefined;
-  return USERS.find((user) => user.authMethod === "otp" && user.phone && normalizePhone(user.phone) === normalized);
-}
-
-// Step 1: "send" a code. Returns true if the phone belongs to a registered OTP
-// user (i.e. a code would be sent). No code is actually transmitted in the demo.
+// Step 1: "send" a code. Any non-empty number is accepted — no SMS is actually
+// transmitted. When a provider is wired up, generate a random code here, send it
+// to `phone`, and store it (with an expiry) for verifyOtp() to check.
 export function requestOtp(phone: string): boolean {
-  return Boolean(findUserByPhone(phone));
+  return phone.trim().length > 0;
 }
 
-// Step 2: verify the entered code for a phone. Returns the user on success.
-export function verifyOtp(phone: string, code: string): AppUser | null {
-  const user = findUserByPhone(phone);
+// Step 2: verify the entered code for the chosen OTP identity (patient or
+// caregiver). Returns the user on success. Replace the SIMULATED_OTP comparison
+// with the stored-code check once real OTP delivery exists.
+export function verifyOtp(username: string, code: string): AppUser | null {
+  const normalized = username.trim().toLowerCase();
+  const user = USERS.find((entry) => entry.authMethod === "otp" && entry.username.toLowerCase() === normalized);
   if (!user) return null;
   return code.trim() === SIMULATED_OTP ? user : null;
 }
 
-// Registered OTP identities — used to show demo phone hints on the login screen.
+// OTP identities available on the login screen (e.g. Patient, Caregiver).
 export function getOtpUsers(): AppUser[] {
   return USERS.filter((user) => user.authMethod === "otp");
 }

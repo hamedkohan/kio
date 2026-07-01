@@ -4525,16 +4525,24 @@ body[data-locale="fa"] .ops-focus-go { transform: scaleX(-1); }
 }
 .login-linkbutton:hover { text-decoration: underline; }
 
-.login-demo-hint {
-  margin-top: 1.3rem;
-  padding: 0.8rem 0.9rem;
-  background: #fbfaf2;
-  border: 1px dashed #e2dcb8;
-  border-radius: 0.6rem;
+.login-identity {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
 }
-.login-demo-hint strong { display: block; color: #8a7a1f; font-size: 0.66rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em; }
-.login-demo-hint p { margin: 0.3rem 0 0.55rem; color: #6f6a52; font-size: 0.78rem; line-height: 1.5; }
-.login-demo-hint ul { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
-.login-demo-hint li { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; font-size: 0.8rem; }
-.login-demo-hint li span { color: var(--ink); font-weight: 700; }
-.login-demo-hint li code { color: var(--accent-dark); font-size: 0.82rem; letter-spacing: 0.03em; }
+.login-identity button {
+  flex: 1;
+  padding: 0.55rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+.login-identity button.active {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+}

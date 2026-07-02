@@ -94,8 +94,9 @@ export function SectionLabel({ icon, children }: { icon: string; children: React
 }
 
 // Personal "Account" tab for the mobile portals: language, help, and sign out —
-// the settings a patient/caregiver expects in their own space.
-export function AccountView({ onLogout, onContact }: { onLogout: () => void; onContact: () => void }) {
+// the settings a patient/caregiver expects in their own space. `children` lets a
+// portal add its own settings sections (e.g. the patient's caregiver access).
+export function AccountView({ onLogout, onContact, children }: { onLogout: () => void; onContact: () => void; children?: React.ReactNode }) {
   const { t, locale, setLocale } = useI18n();
   const languages: Array<{ code: Locale; label: string }> = [
     { code: "en", label: "English" },
@@ -118,6 +119,7 @@ export function AccountView({ onLogout, onContact }: { onLogout: () => void; onC
           <button type="button" onClick={onContact}><strong>{t("Contact support")}</strong><span>{t("Get help with a requested step")}</span></button>
         </div>
       </PanelCard>
+      {children}
       <button type="button" className="account-logout" onClick={onLogout}>{t("Log out")}</button>
       <p className="account-meta">{t("Kio · patient-safe portal")} · {t("Mock data only")}</p>
     </>

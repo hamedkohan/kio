@@ -70,7 +70,18 @@ export function PatientPanel({ item, activeView, onAction, onLogout }: Props) {
   const reportReleased = item.reportAvailable;
   const formComplete = item.patientFormProgress >= 100;
 
-  if (activeView === "account") return <AccountView onLogout={onLogout} onContact={() => onAction("support", item.id)} />;
+  if (activeView === "account") return (
+    <AccountView onLogout={onLogout} onContact={() => onAction("support", item.id)}>
+      <PanelCard title="Caregiver access" subtitle="Not enabled for this case">
+        <div className="status-list">
+          <div><span>{t("Caregiver status")}</span><StatusChip label="Not enabled" /></div>
+          <div><span>{t("Shared information")}</span><StatusChip label="Approved information only" /></div>
+          <div><span>{t("Access control")}</span><StatusChip label="Managed by care team" /></div>
+        </div>
+        <p className="context-copy">{t("Your clinic can enable caregiver access when appropriate. Only approved patient-safe information would be shared.")}</p>
+      </PanelCard>
+    </AccountView>
+  );
 
   // Tasks — everything the clinic has asked for, in one place: form, uploads, consent.
   if (activeView === "tasks") {
@@ -204,14 +215,6 @@ export function PatientPanel({ item, activeView, onAction, onLogout }: Props) {
       <PanelCard title="Your case timeline" subtitle="Milestones your care team has shared">
         {latest ? <p className="timeline-updated">{t("Last updated")} {tv(latest.date)}</p> : null}
         <Timeline events={item.timeline} patientSafe />
-      </PanelCard>
-      <PanelCard title="Caregiver access" subtitle="Not enabled for this case">
-        <div className="status-list">
-          <div><span>{t("Caregiver status")}</span><StatusChip label="Not enabled" /></div>
-          <div><span>{t("Shared information")}</span><StatusChip label="Approved information only" /></div>
-          <div><span>{t("Access control")}</span><StatusChip label="Managed by care team" /></div>
-        </div>
-        <p className="context-copy">{t("Your clinic can enable caregiver access when appropriate. Only approved patient-safe information would be shared.")}</p>
       </PanelCard>
     </>
   );

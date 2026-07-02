@@ -24,6 +24,7 @@ export function AppGreeting({ name, kicker, subtitle }: { name: string; kicker: 
 export function StatusHero({
   eyebrow,
   status,
+  latestUpdate,
   steps,
   ctaLabel,
   ctaHint,
@@ -31,6 +32,7 @@ export function StatusHero({
 }: {
   eyebrow: string;
   status: string;
+  latestUpdate?: string;
   steps: JourneyStep[];
   ctaLabel: string;
   ctaHint: string;
@@ -42,6 +44,9 @@ export function StatusHero({
       <div className="status-hero-glow" aria-hidden="true" />
       <p className="status-hero-eyebrow">{t(eyebrow)}</p>
       <h2 className="status-hero-status">{tv(status)}</h2>
+      {latestUpdate ? (
+        <p className="status-hero-update"><span>{t("Latest update")}</span>{tv(latestUpdate)}</p>
+      ) : null}
 
       <ol className="hero-stepper" aria-label={t("Care journey")}>
         {steps.map((step, index) => (

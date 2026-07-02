@@ -12,6 +12,11 @@ function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
   });
 }
 
+function latestSafeEvent(item: PatientSafeCaseView) {
+  const safe = item.timeline.filter((event) => event.patientSafe);
+  return safe.length ? safe[safe.length - 1] : undefined;
+}
+
 type Props = {
   item: PatientSafeCaseView;
   activeView: string;
@@ -71,15 +76,18 @@ export function CaregiverPanel({ item, activeView, onAction }: Props) {
     </>
   );
 
-  if (activeView === "followup") return (
-    <>
-      <PageHeader eyebrow="Next review point" title="Follow-up" description="Follow-up is shown as a safe next step, not as worsening or a treatment recommendation." />
-      <PanelCard title={item.followUpStatus} subtitle="The clinic will reach out if anything else is needed.">
-        <div className="patient-next-action"><span>{t("How you can help")}</span><strong>{/^scheduled/i.test(item.followUpStatus) ? t("Help keep this review point on the calendar.") : t("No follow-up action is needed right now.")}</strong></div>
-        <button className="secondary-button" onClick={() => onAction("ack-followup", item.id)}>{t("Acknowledge reminder")}</button>
-      </PanelCard>
-    </>
-  );
+  if (activeView === "followup") {
+    const scheduled = /^scheduled/i.test(item.followUpStatus);
+    return (
+      <>
+        <PageHeader eyebrow="Next review point" title="Follow-up" description="Follow-up is shown as a safe next step, not as a diagnosis or treatment recommendation." />
+        <PanelCard title={scheduled ? item.followUpStatus : "No follow-up is scheduled yet."} subtitle="Your clinic will contact the patient if a follow-up is needed.">
+          <div className="patient-next-action"><span>{t("How you can help")}</span><strong>{scheduled ? t("Help keep this review point on the calendar.") : t("No follow-up action is needed from you right now.")}</strong></div>
+          <button className="secondary-button" onClick={() => onAction("support", item.id)}>{t("Contact clinic")}</button>
+        </PanelCard>
+      </>
+    );
+  }
 
   // Care Overview (default)
   const intakeDone = item.intakeStatus === "Complete";
@@ -97,27 +105,33 @@ export function CaregiverPanel({ item, activeView, onAction }: Props) {
     { icon: "calendar", label: "Follow-up", value: item.followUpStatus, tone: followupScheduled ? "good" : "info" },
   ];
 
+  const latest = latestSafeEvent(item);
+
   return (
     <>
-      <AppGreeting name={item.patientFirstName} kicker="Caregiver Portal" subtitle="Supporting your family member with patient-safe information only." />
+      <AppGreeting name={item.patientFirstName} kicker="Caregiver Portal" subtitle="Supporting your family member — what's done, what's next, and how you can help." />
       <StatusHero
         eyebrow="Care status"
         status={item.safeStatus}
+        latestUpdate={latest ? (latest.detail || latest.label) : undefined}
         steps={steps}
         ctaLabel={item.nextPatientAction}
-        ctaHint="You only see patient-safe approved information. Technical details are never shown here."
+        ctaHint="You see the approved, patient-safe information the care team has shared."
         onCta={() => onAction(ctaAction, item.id)}
       />
       <StatTiles tiles={tiles} />
-      <PanelCard title="How you can help" subtitle="Patient-safe requested actions">
+      <PanelCard title="How you can help" subtitle="Steps your family member may need a hand with">
         <div className="patient-actions">
           <button onClick={() => onAction("complete-form", item.id)}><strong>{t("Help with information")}</strong><span>{t("Check forms and requested details")}</span></button>
-          <button onClick={() => onAction("patient-upload", item.id)}><strong>{t("Help with uploads")}</strong><span>{t("MRI and document receipt status")}</span></button>
-          <button onClick={() => onAction("support", item.id)}><strong>{t("Contact support")}</strong><span>{t("Prototype placeholder for help")}</span></button>
+          <button onClick={() => onAction("patient-upload", item.id)}><strong>{t("Help with uploads")}</strong><span>{t("See MRI and document receipts")}</span></button>
+          <button onClick={() => onAction("support", item.id)}><strong>{t("Contact support")}</strong><span>{t("Get help with a requested step")}</span></button>
         </div>
       </PanelCard>
-      <PanelCard title="Care timeline" subtitle="Only safe, approved milestones are shown"><Timeline events={item.timeline} patientSafe /></PanelCard>
-      <div className="safe-note"><strong>{t("Caregiver visibility")}</strong><p>{t("This portal shows only patient-safe approved information. Technical AI outputs and draft clinical notes are never shown here.")}</p></div>
+      <PanelCard title="Care timeline" subtitle="Milestones the care team has shared">
+        {latest ? <p className="timeline-updated">{t("Last updated")} {tv(latest.date)}</p> : null}
+        <Timeline events={item.timeline} patientSafe />
+      </PanelCard>
+      <div className="safe-note"><strong>{t("What you can see here")}</strong><p>{t("You see the approved, patient-safe information the care team has shared. Working notes stay with the care team during review.")}</p></div>
     </>
   );
 }

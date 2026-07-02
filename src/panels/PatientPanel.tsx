@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n";
 import { EvidenceLayerTabs, InteractiveReportPreview, PageHeader, PanelCard, ProgressBar, ReportReadinessChecklist, StatusChip, Timeline } from "../components/ui";
-import { AppGreeting, SectionLabel, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
+import { AppGreeting, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
 import type { PatientSafeCaseView } from "../selectors/visibility";
 
 function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
@@ -12,6 +12,45 @@ function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
   });
 }
 
+// The most recent milestone the care team has shared — powers "Latest update".
+function latestSafeEvent(item: PatientSafeCaseView) {
+  const safe = item.timeline.filter((event) => event.patientSafe);
+  return safe.length ? safe[safe.length - 1] : undefined;
+}
+
+// Plain-language guidance for the top of the portal: what to do now, what comes
+// next, and how the patient will be informed — derived from the case state.
+function patientGuidance(item: PatientSafeCaseView) {
+  const intakeDone = item.intakeStatus === "Complete";
+  const mriDone = item.mriStatus === "Received";
+  const consented = /complete|consented/i.test(item.consentStatus);
+  if (!intakeDone) return {
+    doNow: "Complete the information form your clinic requested.",
+    next: "Once your information is complete, your clinic arranges your MRI.",
+    notify: "You'll be notified when your next step is ready.",
+  };
+  if (!mriDone) return {
+    doNow: "Nothing right now — your clinic is arranging your MRI. We'll let you know if anything is needed from you.",
+    next: "When your MRI is received, your specialist team begins their review.",
+    notify: "You'll be notified when your MRI has been received.",
+  };
+  if (!consented) return {
+    doNow: "Review and provide the requested consent so your care can continue.",
+    next: "After consent, your specialist team reviews your imaging.",
+    notify: "You'll be notified when your report is ready.",
+  };
+  if (!item.reportAvailable) return {
+    doNow: "Nothing right now — your care team is reviewing your results.",
+    next: "Your approved report will appear here after specialist review.",
+    notify: "You'll be notified when your report is available.",
+  };
+  return {
+    doNow: "You can view your approved summary below.",
+    next: "Your clinic will contact you if a follow-up is needed.",
+    notify: "You'll be notified if there's a new update or a follow-up.",
+  };
+}
+
 type Props = {
   item: PatientSafeCaseView;
   activeView: string;
@@ -19,51 +58,80 @@ type Props = {
 };
 
 export const patientNav = [
-  { id: "status", label: "My Case Status" },
+  { id: "status", label: "Status" },
   { id: "forms", label: "Forms" },
   { id: "uploads", label: "Uploads" },
   { id: "consent", label: "Consent" },
-  { id: "followup", label: "Follow-up Reminder" },
+  { id: "followup", label: "Follow-up" },
 ];
 
 export function PatientPanel({ item, activeView, onAction }: Props) {
   const { t, tv } = useI18n();
   const reportReleased = item.reportAvailable;
+  const formComplete = item.patientFormProgress >= 100;
 
   if (activeView === "forms") return (
     <>
-      <PageHeader eyebrow="Your information" title="Forms" description="Complete the information requested by your care team. These forms do not produce a diagnosis." />
-      <PanelCard title="Cognitive history form" subtitle="You can save and continue later"><ProgressBar value={item.patientFormProgress} label="Form completion" /><div className="form-grid"><label>{t("Memory concerns")}<textarea defaultValue={t("I have noticed increasing reliance on reminders.")} /></label><label>{t("Daily activities")}<textarea defaultValue={t("I remain independent in daily activities.")} /></label><label>{t("Caregiver observations")}<textarea defaultValue={t("Only patient-safe submitted information is shown in this portal view.")} /></label><label>{t("Family history")}<select defaultValue="not-sure"><option value="not-sure">{t("Not sure")}</option><option>{t("Yes")}</option><option>{t("No")}</option></select></label></div><button className="primary-button" onClick={() => onAction("complete-form", item.id)}>{t("Submit information")}</button></PanelCard>
+      <PageHeader eyebrow="Your information" title="Forms" description="Your answers help your care team understand your history. These forms do not provide a diagnosis." />
+      <PanelCard title="Cognitive history form" subtitle={formComplete ? "Submitted — you can review or update your answers" : "You can save and continue later"} action={formComplete ? <StatusChip label="Submitted" tone="good" /> : undefined}>
+        <ProgressBar value={item.patientFormProgress} label="Form completion" />
+        <div className="form-grid">
+          <label>{t("Memory concerns")}<textarea defaultValue={t("I have noticed increasing reliance on reminders.")} /></label>
+          <label>{t("Daily activities")}<textarea defaultValue={t("I remain independent in daily activities.")} /></label>
+          <label>{t("Caregiver observations")}<textarea defaultValue={t("Add anything a family member has noticed, if helpful.")} /></label>
+          <label>{t("Family history")}<select defaultValue="not-sure"><option value="not-sure">{t("Not sure")}</option><option>{t("Yes")}</option><option>{t("No")}</option></select></label>
+        </div>
+        <button className="primary-button" onClick={() => onAction("complete-form", item.id)}>{formComplete ? t("Update information") : t("Submit information")}</button>
+      </PanelCard>
     </>
   );
 
   if (activeView === "uploads") return (
     <>
-      <PageHeader eyebrow="Secure files" title="Uploads" description="Upload only the MRI or documents requested by your clinic." />
+      <PageHeader eyebrow="Secure files" title="Uploads" description="Upload only the MRI or documents your clinic requested." />
       <div className="split-layout">
-        <PanelCard title="MRI status" action={<StatusChip label={item.mriStatus === "Received" ? "MRI received" : "MRI needed"} />}><div className="upload-zone"><strong>{item.mriStatus === "Received" ? t("Your MRI has been received.") : t("Upload the requested MRI")}</strong><p>{t("Your specialist team will review the file. Technical and clinical details are not shown here.")}</p><button className="secondary-button" onClick={() => onAction("patient-upload", item.id)}>{item.mriStatus === "Received" ? t("View upload receipt") : t("Choose file")}</button></div></PanelCard>
-        <PanelCard title="Documents"><div className="file-list"><div><span>Referral letter.pdf</span><StatusChip label="Received" /></div><div><span>Prior report.pdf</span><StatusChip label="Received" /></div></div></PanelCard>
+        <PanelCard title="MRI status" action={<StatusChip label={item.mriStatus === "Received" ? "MRI received" : "MRI needed"} tone={item.mriStatus === "Received" ? "good" : "info"} />}>
+          <div className="upload-zone">
+            <strong>{item.mriStatus === "Received" ? t("Your MRI has been received.") : t("Upload the requested MRI")}</strong>
+            <p>{item.mriStatus === "Received" ? t("Your specialist team will review the file before any report is shared.") : t("Your clinic will let you know if an MRI upload is needed from you.")}</p>
+            <button className="secondary-button" onClick={() => onAction("patient-upload", item.id)}>{item.mriStatus === "Received" ? t("View upload receipt") : t("Choose file")}</button>
+          </div>
+        </PanelCard>
+        <PanelCard title="Documents"><div className="file-list"><div><span>Referral letter.pdf</span><StatusChip label="Received" tone="good" /></div><div><span>Prior report.pdf</span><StatusChip label="Received" tone="good" /></div></div></PanelCard>
       </div>
     </>
   );
 
   if (activeView === "consent") return (
     <>
-      <PageHeader eyebrow="Your choices" title="Consent" description="Clinical workflow consent and optional research participation are shown separately." />
-      <div className="card-grid two"><PanelCard title="Clinical workflow consent" action={<StatusChip label={item.consentStatus} />}><p className="context-copy">{t("Required to continue the requested care workflow.")}</p><button className="primary-button" onClick={() => onAction("consent", item.id)}>{t("Review consent")}</button></PanelCard><PanelCard title="Optional research participation" action={<StatusChip label={item.researchConsentStatus} />}><p className="context-copy">{t("Research participation is optional and uses governed anonymized data. Research results are not shown here.")}</p><button className="secondary-button" onClick={() => onAction("research-consent", item.id)}>{t("Manage choice")}</button></PanelCard></div>
+      <PageHeader eyebrow="Your choices" title="Consent" description="Your care consent and optional research participation are kept separate." />
+      <div className="card-grid two">
+        <PanelCard title="Clinical workflow consent" action={<StatusChip label={item.consentStatus} />}><p className="context-copy">{t("Required to continue your requested care workflow.")}</p><button className="primary-button" onClick={() => onAction("consent", item.id)}>{t("Review consent")}</button></PanelCard>
+        <PanelCard title="Optional research participation" action={<StatusChip label={item.researchConsentStatus} />}><p className="context-copy">{t("Optional. Uses governed anonymized data where permitted. Research results are not shown in this portal.")}</p><button className="secondary-button" onClick={() => onAction("research-consent", item.id)}>{t("Manage choice")}</button></PanelCard>
+      </div>
     </>
   );
 
-  if (activeView === "followup") return (
-    <>
-      <PageHeader eyebrow="Next review point" title="Follow-up Reminder" description="Follow-up is shown as a safe next step, not as worsening or a treatment recommendation." />
-      <PanelCard title={item.followUpStatus} subtitle="Your clinic will contact you if any additional action is needed."><div className="patient-next-action"><span>{t("What you need to do")}</span><strong>{/^scheduled/i.test(item.followUpStatus) ? t("Keep this review point on your calendar.") : t("No follow-up action is needed right now.")}</strong></div><button className="secondary-button" onClick={() => onAction("ack-followup", item.id)}>{t("Acknowledge reminder")}</button></PanelCard>
-      <PanelCard title="Follow-up coordination" subtitle="Placeholder · status-only prototype">
-        <div className="status-list"><div><span>{t("Coordination mode")}</span><StatusChip label="Clinic managed" /></div><div><span>{t("Scheduling editor")}</span><StatusChip label="Not active in prototype" /></div><div><span>{t("Clinical meaning")}</span><StatusChip label="Discuss with care team" /></div></div>
-        <div className="safe-note"><strong>{t("Safe follow-up boundary")}</strong><p>{t("Kio shows review coordination only. It does not provide treatment recommendations or interpret worsening.")}</p></div>
-      </PanelCard>
-    </>
-  );
+  if (activeView === "followup") {
+    const scheduled = /^scheduled/i.test(item.followUpStatus);
+    return (
+      <>
+        <PageHeader eyebrow="Next review point" title="Follow-up reminder" description="Follow-up is shown as a safe next step, not as a diagnosis or treatment recommendation." />
+        <PanelCard title={scheduled ? item.followUpStatus : "No follow-up is scheduled yet."} subtitle="Your clinic will contact you if a follow-up is needed.">
+          <div className="patient-next-action"><span>{t("What you need to do")}</span><strong>{scheduled ? t("Keep this review point on your calendar.") : t("No follow-up action is needed from you right now.")}</strong></div>
+          <button className="secondary-button" onClick={() => onAction("support", item.id)}>{t("Contact clinic")}</button>
+        </PanelCard>
+        <PanelCard title="Follow-up coordination" subtitle="How your review point is managed">
+          <div className="status-list">
+            <div><span>{t("Coordination mode")}</span><StatusChip label="Clinic managed" /></div>
+            <div><span>{t("Scheduling")}</span><StatusChip label="Not enabled for this case" /></div>
+            <div><span>{t("Clinical meaning")}</span><StatusChip label="Discuss with your care team" /></div>
+          </div>
+          <div className="safe-note"><strong>{t("What Kio does here")}</strong><p>{t("Kio shows review coordination only. It does not provide treatment recommendations or interpret clinical change.")}</p></div>
+        </PanelCard>
+      </>
+    );
+  }
 
   const intakeDone = item.intakeStatus === "Complete";
   const mriDone = item.mriStatus === "Received";
@@ -79,33 +147,40 @@ export function PatientPanel({ item, activeView, onAction }: Props) {
     { icon: "report", label: "Report", value: reportReleased ? "Available" : "In review", tone: reportReleased ? "good" : "info" },
     { icon: "calendar", label: "Follow-up", value: item.followUpStatus, tone: followupScheduled ? "good" : "info" },
   ];
+  const latest = latestSafeEvent(item);
+  const guidance = patientGuidance(item);
 
   return (
     <>
-      <AppGreeting name={item.patientFirstName} kicker="Patient Portal" subtitle="A calm view of your care — only what your team has approved." />
+      <AppGreeting name={item.patientFirstName} kicker="Patient Portal" subtitle="A calm view of your care — what's done, what's next, and when you'll hear from us." />
       <StatusHero
         eyebrow="Your case status"
         status={item.safeStatus}
+        latestUpdate={latest ? (latest.detail || latest.label) : undefined}
         steps={steps}
         ctaLabel={item.nextPatientAction}
-        ctaHint="Your care team will guide every step. Technical details stay care-team only."
+        ctaHint="Your care team guides every step. You'll be notified when something needs you."
         onCta={() => onAction(ctaAction, item.id)}
       />
+      <div className="patient-guidance">
+        <div className="guidance-card guidance-do"><span>{t("What you need to do")}</span><strong>{t(guidance.doNow)}</strong></div>
+        <div className="guidance-card guidance-next"><span>{t("What happens next")}</span><strong>{t(guidance.next)}</strong></div>
+      </div>
+      <p className="guidance-notify">{t(guidance.notify)}</p>
       <StatTiles tiles={tiles} />
       {reportReleased ? (
         <section className="patient-report-package">
           <div>
-            <p className="eyebrow">{t("Patient-safe released report")}</p>
+            <p className="eyebrow">{t("Your approved summary")}</p>
             <h2>{tv(item.releaseTitle ?? "Specialist-reviewed summary")}</h2>
             <p>{item.approvedSummary ? tv(item.approvedSummary) : t("Your specialist-reviewed summary is available.")}</p>
           </div>
           <EvidenceLayerTabs layers={[
-            { label: "Care team review", status: "Completed", detail: "Reviewed before release", tone: "good" },
-            { label: "Technical details", status: "Care-team only", detail: "Not patient-facing" },
-            { label: "Draft clinical notes", status: "Not shown", detail: "Only approved wording appears" },
-            { label: "Follow-up", status: item.followUpStatus, detail: "Clinic-guided", tone: "info" },
+            { label: "Care team review", status: "Completed", detail: "Reviewed before it was shared with you", tone: "good" },
+            { label: "Specialist review details", status: "Reviewed first", detail: "Your care team reviewed the full results" },
+            { label: "Follow-up", status: item.followUpStatus, detail: "Guided by your clinic", tone: "info" },
           ]} />
-          <InteractiveReportPreview title="Plain-language release package" description="This is the patient-safe layer created from reviewed evidence, not a raw technical report.">
+          <InteractiveReportPreview title="Your plain-language summary" description="This is the summary your care team approved for you, written in plain language.">
             {item.approvedRelease ? (
               <div className="context-list">
                 <div><span>{t("What was reviewed")}</span><p>{tv(item.approvedRelease.whatWasReviewed)}</p></div>
@@ -119,27 +194,36 @@ export function PatientPanel({ item, activeView, onAction }: Props) {
               <p>{t("Your specialist-reviewed summary is available.")}</p>
             )}
           </InteractiveReportPreview>
-          <div className="safe-note"><strong>{t("Discuss with your care team")}</strong><p>{t("This portal shows only approved summary information. It does not provide technical AI outputs or treatment recommendations.")}</p></div>
+          <div className="safe-note"><strong>{t("Talk it through with your care team")}</strong><p>{t("This summary is here to help you understand your care. Your care team can answer any questions about what it means for you.")}</p></div>
         </section>
       ) : (
-        <PanelCard title="Report status" subtitle="No report content is shown before release">
-          <ReportReadinessChecklist title="Patient-safe release path" items={[
-            { label: "Care team review", status: "In progress", detail: "Your care team is reviewing your imaging results." },
-            { label: "Patient-safe approval", status: "Not released", detail: "Only reviewed and approved wording appears here." },
-            { label: "Technical report layers", status: "Care-team only", detail: "They are reviewed before plain-language release." },
-            { label: "Draft clinical notes", status: "Not shown", detail: "Draft content is never shown here." },
+        <PanelCard title="Report status" subtitle="Your report will appear here after specialist approval.">
+          <ReportReadinessChecklist title="Where your report is" items={[
+            { label: "Specialist review", status: "In progress", detail: "Your care team is reviewing your imaging results." },
+            { label: "Approved for you to view", status: "Waiting for approval", detail: "Your report is shared once it's approved for you." },
+            { label: "Report available", status: "Not shared yet", detail: "It will appear here and you'll be notified." },
           ]} />
-          <div className="patient-next-action"><span>{t("What this means")}</span><strong>{t("Your report will appear here only after specialist approval and release.")}</strong></div>
-          <div className="safe-note"><strong>{t("Still under review")}</strong><p>{t("Your care team is reviewing your imaging results. Technical AI outputs and draft clinical notes are not shown here.")}</p></div>
+          <div className="safe-note"><strong>{t("Reviewed first, shared safely")}</strong><p>{t("Your care team is reviewing the results first. You'll see the approved summary when it is ready.")}</p></div>
         </PanelCard>
       )}
-      <div className="split-layout">
-        <PanelCard title="Your case timeline" subtitle="Only safe, approved milestones are shown"><Timeline events={item.timeline} patientSafe /></PanelCard>
-        <PanelCard title="Helpful actions"><div className="patient-actions"><button onClick={() => onAction("complete-form", item.id)}><strong>{t("Review your information")}</strong><span>{t("Check forms and requested details")}</span></button><button onClick={() => onAction("patient-upload", item.id)}><strong>{t("View uploads")}</strong><span>{t("See MRI and document receipt status · placeholder receipt")}</span></button><button onClick={() => onAction("support", item.id)}><strong>{t("Contact support")}</strong><span>{t("Prototype placeholder for upload or required-action help")}</span></button></div></PanelCard>
-      </div>
-      <PanelCard title="Caregiver access" subtitle="Placeholder · permission model not active in this prototype">
-        <div className="status-list"><div><span>{t("Caregiver status")}</span><StatusChip label="Not configured" /></div><div><span>{t("Visible health information")}</span><StatusChip label="Patient-approved only" /></div><div><span>{t("Invite / revoke workflow")}</span><StatusChip label="Placeholder only" /></div></div>
-        <p className="context-copy">{t("Caregiver permission management is intentionally not active in this prototype. This section only marks where a governed access model would appear.")}</p>
+      <PanelCard title="Your case timeline" subtitle="Milestones your care team has shared">
+        {latest ? <p className="timeline-updated">{t("Last updated")} {tv(latest.date)}</p> : null}
+        <Timeline events={item.timeline} patientSafe />
+      </PanelCard>
+      <PanelCard title="Helpful actions">
+        <div className="patient-actions">
+          <button onClick={() => onAction("complete-form", item.id)}><strong>{t("Review your information")}</strong><span>{t("Check your forms and requested details")}</span></button>
+          <button onClick={() => onAction("patient-upload", item.id)}><strong>{t("View uploads")}</strong><span>{t("See your MRI and document receipts")}</span></button>
+          <button onClick={() => onAction("support", item.id)}><strong>{t("Contact support")}</strong><span>{t("Get help with a requested step")}</span></button>
+        </div>
+      </PanelCard>
+      <PanelCard title="Caregiver access" subtitle="Not enabled for this case">
+        <div className="status-list">
+          <div><span>{t("Caregiver status")}</span><StatusChip label="Not enabled" /></div>
+          <div><span>{t("Shared information")}</span><StatusChip label="Approved information only" /></div>
+          <div><span>{t("Access control")}</span><StatusChip label="Managed by care team" /></div>
+        </div>
+        <p className="context-copy">{t("Your clinic can enable caregiver access when appropriate. Only approved patient-safe information would be shared.")}</p>
       </PanelCard>
     </>
   );

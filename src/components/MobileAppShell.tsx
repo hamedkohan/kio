@@ -68,10 +68,12 @@ export function MobileAppShell({
           </button>
         </header>
 
-        <div className="phone-langtoggle" role="group" aria-label={t("Language")}>
-          {locales.map((item) => (
-            <button key={item} type="button" className={locale === item ? "active" : ""} aria-pressed={locale === item} onClick={() => setLocale(item)}>{localeLabels[item]}</button>
-          ))}
+        <div className="phone-langtoggle">
+          <div className="phone-lang-group" role="group" aria-label={t("Language")}>
+            {locales.map((item) => (
+              <button key={item} type="button" className={locale === item ? "active" : ""} aria-pressed={locale === item} onClick={() => setLocale(item)}>{localeLabels[item]}</button>
+            ))}
+          </div>
           {onLogout ? <button type="button" className="phone-logout" onClick={onLogout}>{t("Log out")}</button> : null}
         </div>
 

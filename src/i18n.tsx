@@ -36,6 +36,21 @@ export type RoleSlug = keyof typeof slugToRole;
 const en: Record<string, string> = {};
 
 const fa: Record<string, string> = {
+  // Patient status guidance (doNow/next/notify)
+  "Nothing right now — your care team is reviewing your results.": "در حال حاضر کاری لازم نیست — تیم درمان در حال بررسی نتایج شماست.",
+  "Your approved report will appear here after specialist review.": "گزارش تأییدشده‌ی شما پس از بررسی متخصص اینجا نمایش داده می‌شود.",
+  "You'll be notified when your report is available.": "هر وقت گزارش شما آماده شود به شما اطلاع داده می‌شود.",
+  "Nothing right now — your clinic is arranging your MRI. We'll let you know if anything is needed from you.": "در حال حاضر کاری لازم نیست — کلینیک در حال هماهنگیِ MRI شماست. اگر چیزی از شما لازم باشد به شما اطلاع می‌دهیم.",
+  "Complete the information form your clinic requested.": "فرم اطلاعاتی را که کلینیک درخواست کرده تکمیل کنید.",
+  "Once your information is complete, your clinic arranges your MRI.": "پس از تکمیل اطلاعات شما، کلینیک MRI شما را هماهنگ می‌کند.",
+  "You'll be notified when your next step is ready.": "هر وقت گام بعدی شما آماده شود به شما اطلاع داده می‌شود.",
+  "When your MRI is received, your specialist team begins their review.": "وقتی MRI شما دریافت شود، تیم متخصص بررسی خود را آغاز می‌کند.",
+  "You'll be notified when your MRI has been received.": "هر وقت MRI شما دریافت شود به شما اطلاع داده می‌شود.",
+  "Review and provide the requested consent so your care can continue.": "رضایت درخواست‌شده را بررسی و ثبت کنید تا روند مراقبت شما ادامه یابد.",
+  "After consent, your specialist team reviews your imaging.": "پس از رضایت، تیم متخصص تصویربرداری شما را بررسی می‌کند.",
+  "You'll be notified when your report is ready.": "هر وقت گزارش شما آماده شود به شما اطلاع داده می‌شود.",
+  "You can view your approved summary below.": "می‌توانید خلاصه‌ی تأییدشده‌ی خود را در پایین ببینید.",
+  "You'll be notified if there's a new update or a follow-up.": "اگر به‌روزرسانی تازه یا پیگیری‌ای باشد به شما اطلاع داده می‌شود.",
   // Portal nav / Account / Tasks
   "Home": "خانه",
   "Tasks": "کارها",

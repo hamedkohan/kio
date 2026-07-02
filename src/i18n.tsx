@@ -36,6 +36,26 @@ export type RoleSlug = keyof typeof slugToRole;
 const en: Record<string, string> = {};
 
 const fa: Record<string, string> = {
+  // Caregiver tab polish
+  "Overview": "نمای کلی",
+  "Requests": "درخواست‌ها",
+  "Education": "آموزش",
+  "Help with the information form": "کمک برای تکمیل فرم اطلاعات",
+  "Help with the MRI or documents": "کمک برای MRI یا مدارک",
+  "Review the requested consent": "بررسی رضایت درخواست‌شده",
+  "Action requests": "درخواست‌های اقدام",
+  "Steps your family member may need a hand with. These do not produce a diagnosis.": "مراحلی که عضو خانواده‌تان ممکن است به کمک نیاز داشته باشد. این‌ها تشخیص نمی‌دهند.",
+  "Right now": "همین حالا",
+  "Nothing needs your help right now.": "در حال حاضر چیزی به کمک شما نیاز ندارد.",
+  "One step may need your help.": "یک مرحله ممکن است به کمک شما نیاز داشته باشد.",
+  "{count} steps may need your help.": "{count} مرحله ممکن است به کمک شما نیاز داشته باشد.",
+  "All set — nothing needed here.": "همه‌چیز آماده است — اینجا کاری لازم نیست.",
+  "You'll be kept informed": "شما در جریان قرار می‌گیرید",
+  "The clinic guides each step. You'll be notified when something needs attention.": "کلینیک هر مرحله را راهنمایی می‌کند. هر وقت چیزی نیاز به توجه داشته باشد به شما اطلاع داده می‌شود.",
+  "Brain health education": "آموزش سلامت مغز",
+  "Simple, everyday ways to support brain health. This is not medical advice or a treatment plan.": "راه‌های ساده و روزمره برای حمایت از سلامت مغز. این توصیه‌ی پزشکی یا برنامه‌ی درمانی نیست.",
+  "General guidance only": "فقط راهنمایی عمومی",
+  "This is general brain-health education to support your family member. It isn't a diagnosis or treatment plan — always follow the care team's guidance.": "این آموزش عمومیِ سلامت مغز برای حمایت از عضو خانواده‌تان است. تشخیص یا برنامه‌ی درمانی نیست — همیشه از راهنمایی تیم درمان پیروی کنید.",
   // Patient / Caregiver portal refresh
   "Latest update": "آخرین به‌روزرسانی",
   "What happens next": "مرحله‌ی بعد چیست",

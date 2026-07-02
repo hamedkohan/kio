@@ -24,9 +24,9 @@ type Props = {
 };
 
 export const caregiverNav = [
-  { id: "overview", label: "Care Overview" },
-  { id: "requests", label: "Action Requests" },
-  { id: "education", label: "Brain Health Education" },
+  { id: "overview", label: "Overview" },
+  { id: "requests", label: "Requests" },
+  { id: "education", label: "Education" },
   { id: "followup", label: "Follow-up" },
 ];
 
@@ -45,34 +45,42 @@ export function CaregiverPanel({ item, activeView, onAction }: Props) {
 
   if (activeView === "requests") {
     const requests = [
-      { id: "complete-form", label: "Help complete patient information", status: item.intakeStatus, done: item.intakeStatus === "Complete", cta: "Open forms" },
-      { id: "patient-upload", label: "Help with requested MRI / documents", status: item.mriStatus === "Received" ? "Received" : "Waiting", done: item.mriStatus === "Received", cta: "View uploads" },
-      { id: "consent", label: "Review clinical workflow consent", status: item.consentStatus, done: /complete|consented/i.test(item.consentStatus), cta: "Review consent" },
+      { id: "complete-form", label: "Help with the information form", status: item.intakeStatus, done: item.intakeStatus === "Complete", cta: "Open forms" },
+      { id: "patient-upload", label: "Help with the MRI or documents", status: item.mriStatus === "Received" ? "Received" : "Waiting", done: item.mriStatus === "Received", cta: "View uploads" },
+      { id: "consent", label: "Review the requested consent", status: item.consentStatus, done: /complete|consented/i.test(item.consentStatus), cta: "Review consent" },
     ];
+    const openCount = requests.filter((request) => !request.done).length;
+    const helpLine = openCount === 0
+      ? t("Nothing needs your help right now.")
+      : openCount === 1
+        ? t("One step may need your help.")
+        : t("{count} steps may need your help.").replace("{count}", String(openCount));
     return (
       <>
-        <PageHeader eyebrow="How you can help" title="Action Requests" description="Tasks your family member may need help completing. These do not produce a diagnosis." />
+        <PageHeader eyebrow="How you can help" title="Action requests" description="Steps your family member may need a hand with. These do not produce a diagnosis." />
+        <div className="patient-next-action"><span>{t("Right now")}</span><strong>{helpLine}</strong></div>
         <div className="card-grid two">
           {requests.map((request) => (
-            <PanelCard key={request.id} title={request.label} action={<StatusChip label={request.done ? "Complete" : request.status} tone={request.done ? "good" : "attention"} />}>
-              <p className="context-copy">{request.done ? t("No action needed right now.") : t("Your help may be needed to complete this step.")}</p>
+            <PanelCard key={request.id} title={request.label} action={<StatusChip label={request.done ? "Done" : request.status} tone={request.done ? "good" : "attention"} />}>
+              <p className="context-copy">{request.done ? t("All set — nothing needed here.") : t("Your help may be needed to complete this step.")}</p>
               <button className="secondary-button" onClick={() => onAction(request.id, item.id)}>{t(request.cta)}</button>
             </PanelCard>
           ))}
         </div>
+        <div className="safe-note"><strong>{t("You'll be kept informed")}</strong><p>{t("The clinic guides each step. You'll be notified when something needs attention.")}</p></div>
       </>
     );
   }
 
   if (activeView === "education") return (
     <>
-      <PageHeader eyebrow="Brain health & healthy longevity" title="Brain Health Education" description="General educational guidance to support brain health. This is not medical advice or a treatment plan." />
+      <PageHeader eyebrow="Brain health & healthy longevity" title="Brain health education" description="Simple, everyday ways to support brain health. This is not medical advice or a treatment plan." />
       <div className="card-grid two">
         {EDUCATION_PILLARS.map((pillar) => (
           <PanelCard key={pillar.title} title={pillar.title}><p className="context-copy">{t(pillar.body)}</p></PanelCard>
         ))}
       </div>
-      <div className="safe-note"><strong>{t("Educational only")}</strong><p>{t("This content is general brain-health education inspired by lifestyle-prevention programs. Always follow your care team's guidance for this patient.")}</p></div>
+      <div className="safe-note"><strong>{t("General guidance only")}</strong><p>{t("This is general brain-health education to support your family member. It isn't a diagnosis or treatment plan — always follow the care team's guidance.")}</p></div>
     </>
   );
 

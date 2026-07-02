@@ -1,5 +1,6 @@
-import { useI18n } from "../i18n";
+import { useI18n, type Locale } from "../i18n";
 import { Icon } from "./phoneIcons";
+import { PageHeader, PanelCard } from "./ui";
 
 export type JourneyStep = { label: string; state: "done" | "current" | "upcoming" };
 export type StatTile = { icon: string; label: string; value: string; tone: "good" | "info" | "attention" | "neutral" };
@@ -89,5 +90,36 @@ export function StatTiles({ tiles }: { tiles: StatTile[] }) {
 export function SectionLabel({ icon, children }: { icon: string; children: React.ReactNode }) {
   return (
     <h3 className="app-section-label"><Icon name={icon} />{children}</h3>
+  );
+}
+
+// Personal "Account" tab for the mobile portals: language, help, and sign out —
+// the settings a patient/caregiver expects in their own space.
+export function AccountView({ onLogout, onContact }: { onLogout: () => void; onContact: () => void }) {
+  const { t, locale, setLocale } = useI18n();
+  const languages: Array<{ code: Locale; label: string }> = [
+    { code: "en", label: "English" },
+    { code: "fa", label: "فارسی" },
+  ];
+  return (
+    <>
+      <PageHeader eyebrow="You" title="Account" description="Your language, help, and sign out." />
+      <PanelCard title="Language" subtitle="Choose how the portal is shown">
+        <div className="account-lang">
+          {languages.map((lang) => (
+            <button key={lang.code} type="button" className={locale === lang.code ? "active" : ""} aria-pressed={locale === lang.code} onClick={() => setLocale(lang.code)}>
+              {lang.label}
+            </button>
+          ))}
+        </div>
+      </PanelCard>
+      <PanelCard title="Help">
+        <div className="patient-actions">
+          <button type="button" onClick={onContact}><strong>{t("Contact support")}</strong><span>{t("Get help with a requested step")}</span></button>
+        </div>
+      </PanelCard>
+      <button type="button" className="account-logout" onClick={onLogout}>{t("Log out")}</button>
+      <p className="account-meta">{t("Kio · patient-safe portal")} · {t("Mock data only")}</p>
+    </>
   );
 }

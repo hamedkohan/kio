@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n";
 import { PageHeader, PanelCard, StatusChip, Timeline } from "../components/ui";
-import { AppGreeting, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
+import { AccountView, AppGreeting, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
 import type { PatientSafeCaseView } from "../selectors/visibility";
 
 function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
@@ -21,13 +21,14 @@ type Props = {
   item: PatientSafeCaseView;
   activeView: string;
   onAction: (action: string, caseId: string) => void;
+  onLogout: () => void;
 };
 
 export const caregiverNav = [
-  { id: "overview", label: "Overview" },
-  { id: "requests", label: "Requests" },
-  { id: "education", label: "Education" },
-  { id: "followup", label: "Follow-up" },
+  { id: "overview", label: "Home" },
+  { id: "requests", label: "Help" },
+  { id: "education", label: "Learn" },
+  { id: "account", label: "Account" },
 ];
 
 // Brain-health lifestyle pillars (LEAP-inspired reference, educational only — not medical advice).
@@ -39,9 +40,11 @@ const EDUCATION_PILLARS = [
   { title: "Vascular health", body: "Managing blood pressure, sugar, and cholesterol with the clinic protects the brain." },
 ];
 
-export function CaregiverPanel({ item, activeView, onAction }: Props) {
+export function CaregiverPanel({ item, activeView, onAction, onLogout }: Props) {
   const { t, tv } = useI18n();
   const reportReleased = item.reportAvailable;
+
+  if (activeView === "account") return <AccountView onLogout={onLogout} onContact={() => onAction("support", item.id)} />;
 
   if (activeView === "requests") {
     const requests = [
@@ -84,20 +87,7 @@ export function CaregiverPanel({ item, activeView, onAction }: Props) {
     </>
   );
 
-  if (activeView === "followup") {
-    const scheduled = /^scheduled/i.test(item.followUpStatus);
-    return (
-      <>
-        <PageHeader eyebrow="Next review point" title="Follow-up" description="Follow-up is shown as a safe next step, not as a diagnosis or treatment recommendation." />
-        <PanelCard title={scheduled ? item.followUpStatus : "No follow-up is scheduled yet."} subtitle="Your clinic will contact the patient if a follow-up is needed.">
-          <div className="patient-next-action"><span>{t("How you can help")}</span><strong>{scheduled ? t("Help keep this review point on the calendar.") : t("No follow-up action is needed from you right now.")}</strong></div>
-          <button className="secondary-button" onClick={() => onAction("support", item.id)}>{t("Contact clinic")}</button>
-        </PanelCard>
-      </>
-    );
-  }
-
-  // Care Overview (default)
+  // Care Overview (default / Home)
   const intakeDone = item.intakeStatus === "Complete";
   const mriDone = item.mriStatus === "Received";
   const followupScheduled = /^scheduled/i.test(item.followUpStatus);

@@ -83,6 +83,12 @@ const PATHS: Record<string, ReactNode> = {
   ),
   arrow: <path d="M5 12h13M13 6l6 6-6 6" />,
   dot: <circle cx="12" cy="12" r="3" />,
+  user: (
+    <>
+      <circle cx="12" cy="8" r="3.6" />
+      <path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5" />
+    </>
+  ),
 };
 
 export function Icon({ name, className }: { name: string; className?: string }) {

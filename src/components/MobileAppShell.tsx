@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { roleDefinitions } from "../data";
-import { localeLabels, locales, useI18n } from "../i18n";
+import { useI18n } from "../i18n";
 import type { RoleId } from "../types";
 import { Icon } from "./phoneIcons";
 
@@ -11,12 +11,14 @@ export type AppNotification = { title: string; detail: string; when: string };
 const NAV_ICONS: Record<string, string> = {
   status: "home",
   overview: "home",
+  tasks: "forms",
   forms: "forms",
   uploads: "uploads",
   consent: "consent",
   followup: "calendar",
   requests: "requests",
   education: "education",
+  account: "user",
 };
 
 // App-like, mobile-first shell for the Patient and Caregiver portals:
@@ -27,7 +29,6 @@ export function MobileAppShell({
   navItems,
   onNavigate,
   onRoleHome,
-  onLogout,
   canSwitchRole = true,
   children,
   toast,
@@ -38,13 +39,12 @@ export function MobileAppShell({
   navItems: NavItem[];
   onNavigate: (view: string) => void;
   onRoleHome: () => void;
-  onLogout?: () => void;
   canSwitchRole?: boolean;
   children: ReactNode;
   toast?: string;
   notifications?: AppNotification[];
 }) {
-  const { locale, dir, setLocale, tv, t } = useI18n();
+  const { locale, dir, tv, t } = useI18n();
   const definition = roleDefinitions[role];
   const [notifOpen, setNotifOpen] = useState(false);
 
@@ -67,15 +67,6 @@ export function MobileAppShell({
             <Icon name="bell" />{notifications.length ? <em>{notifications.length}</em> : null}
           </button>
         </header>
-
-        <div className="phone-langtoggle">
-          <div className="phone-lang-group" role="group" aria-label={t("Language")}>
-            {locales.map((item) => (
-              <button key={item} type="button" className={locale === item ? "active" : ""} aria-pressed={locale === item} onClick={() => setLocale(item)}>{localeLabels[item]}</button>
-            ))}
-          </div>
-          {onLogout ? <button type="button" className="phone-logout" onClick={onLogout}>{t("Log out")}</button> : null}
-        </div>
 
         <main className="phone-content">{children}</main>
 

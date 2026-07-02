@@ -717,8 +717,8 @@ export default function App() {
       {role === "operations" ? <OperationsPanel caseViews={operationsCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleOperationsAction} onCreateCase={createCaseShell} directory={directory} onSaveClinician={saveClinician} onSaveCenter={saveCenter} /> : null}
       {role === "radiologist" ? <RadiologistPanel caseViews={radiologistCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handleRadiologistAction} directory={directory} /> : null}
       {role === "physician" ? <PhysicianPanel caseViews={physicianCaseViews} activeView={activeView} selectedCaseId={selectedCaseId} onSelectCase={setSelectedCaseId} onAction={handlePhysicianAction} directory={directory} /> : null}
-      {role === "patient" ? <PatientPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} /> : null}
-      {role === "caregiver" ? <CaregiverPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} /> : null}
+      {role === "patient" ? <PatientPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} onLogout={handleLogout} /> : null}
+      {role === "caregiver" ? <CaregiverPanel item={patientSafeView} activeView={activeView} onAction={handlePatientAction} onLogout={handleLogout} /> : null}
       {role === "research" ? <ResearchPanel cases={cases.map((item) => toResearchSafeCaseView(item, { role: "researcher", researchPurposeApproved: true }))} activeView={activeView} onAction={() => showToast("Anonymized CSV export placeholder generated.")} /> : null}
     </>
   );
@@ -728,7 +728,7 @@ export default function App() {
   return (
     <I18nProvider locale={locale} setLocale={switchLocale}>
       {isAppLike ? (
-        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} onLogout={handleLogout} canSwitchRole={canSwitchRole} toast={toast} notifications={patientNotifications}>
+        <MobileAppShell role={role} activeView={activeView} navItems={navItems} onNavigate={setView} onRoleHome={goRoleHome} canSwitchRole={canSwitchRole} toast={toast} notifications={patientNotifications}>
           {shellChildren}
         </MobileAppShell>
       ) : (

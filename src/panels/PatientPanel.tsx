@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n";
 import { EvidenceLayerTabs, InteractiveReportPreview, PageHeader, PanelCard, ProgressBar, ReportReadinessChecklist, StatusChip, Timeline } from "../components/ui";
-import { AppGreeting, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
+import { AccountView, AppGreeting, StatTiles, StatusHero, type JourneyStep, type StatTile } from "../components/MobileHome";
 import type { PatientSafeCaseView } from "../selectors/visibility";
 
 function buildSteps(flags: boolean[], labels: string[]): JourneyStep[] {
@@ -55,62 +55,57 @@ type Props = {
   item: PatientSafeCaseView;
   activeView: string;
   onAction: (action: string, caseId: string) => void;
+  onLogout: () => void;
 };
 
 export const patientNav = [
-  { id: "status", label: "Status" },
-  { id: "forms", label: "Forms" },
-  { id: "uploads", label: "Uploads" },
-  { id: "consent", label: "Consent" },
+  { id: "status", label: "Home" },
+  { id: "tasks", label: "Tasks" },
   { id: "followup", label: "Follow-up" },
+  { id: "account", label: "Account" },
 ];
 
-export function PatientPanel({ item, activeView, onAction }: Props) {
+export function PatientPanel({ item, activeView, onAction, onLogout }: Props) {
   const { t, tv } = useI18n();
   const reportReleased = item.reportAvailable;
   const formComplete = item.patientFormProgress >= 100;
 
-  if (activeView === "forms") return (
-    <>
-      <PageHeader eyebrow="Your information" title="Forms" description="Your answers help your care team understand your history. These forms do not provide a diagnosis." />
-      <PanelCard title="Cognitive history form" subtitle={formComplete ? "Submitted — you can review or update your answers" : "You can save and continue later"} action={formComplete ? <StatusChip label="Submitted" tone="good" /> : undefined}>
-        <ProgressBar value={item.patientFormProgress} label="Form completion" />
-        <div className="form-grid">
-          <label>{t("Memory concerns")}<textarea defaultValue={t("I have noticed increasing reliance on reminders.")} /></label>
-          <label>{t("Daily activities")}<textarea defaultValue={t("I remain independent in daily activities.")} /></label>
-          <label>{t("Caregiver observations")}<textarea defaultValue={t("Add anything a family member has noticed, if helpful.")} /></label>
-          <label>{t("Family history")}<select defaultValue="not-sure"><option value="not-sure">{t("Not sure")}</option><option>{t("Yes")}</option><option>{t("No")}</option></select></label>
-        </div>
-        <button className="primary-button" onClick={() => onAction("complete-form", item.id)}>{formComplete ? t("Update information") : t("Submit information")}</button>
-      </PanelCard>
-    </>
-  );
+  if (activeView === "account") return <AccountView onLogout={onLogout} onContact={() => onAction("support", item.id)} />;
 
-  if (activeView === "uploads") return (
-    <>
-      <PageHeader eyebrow="Secure files" title="Uploads" description="Upload only the MRI or documents your clinic requested." />
-      <div className="split-layout">
-        <PanelCard title="MRI status" action={<StatusChip label={item.mriStatus === "Received" ? "MRI received" : "MRI needed"} tone={item.mriStatus === "Received" ? "good" : "info"} />}>
+  // Tasks — everything the clinic has asked for, in one place: form, uploads, consent.
+  if (activeView === "tasks") {
+    const consented = /complete|consented/i.test(item.consentStatus);
+    const openCount = [formComplete, item.mriStatus === "Received", consented].filter((done) => !done).length;
+    return (
+      <>
+        <PageHeader eyebrow="Your to-do" title="Tasks" description="Everything your clinic has asked for, in one place. These do not produce a diagnosis." />
+        <div className="patient-next-action"><span>{t("Right now")}</span><strong>{openCount === 0 ? t("You're all caught up — nothing to complete.") : openCount === 1 ? t("One item still needs you.") : t("{count} items still need you.").replace("{count}", String(openCount))}</strong></div>
+
+        <PanelCard title="Cognitive history form" subtitle={formComplete ? "Submitted — you can review or update your answers" : "You can save and continue later"} action={<StatusChip label={formComplete ? "Submitted" : "Action needed"} tone={formComplete ? "good" : "attention"} />}>
+          <ProgressBar value={item.patientFormProgress} label="Form completion" />
+          <div className="form-grid">
+            <label>{t("Memory concerns")}<textarea defaultValue={t("I have noticed increasing reliance on reminders.")} /></label>
+            <label>{t("Daily activities")}<textarea defaultValue={t("I remain independent in daily activities.")} /></label>
+            <label>{t("Caregiver observations")}<textarea defaultValue={t("Add anything a family member has noticed, if helpful.")} /></label>
+            <label>{t("Family history")}<select defaultValue="not-sure"><option value="not-sure">{t("Not sure")}</option><option>{t("Yes")}</option><option>{t("No")}</option></select></label>
+          </div>
+          <button className="primary-button" onClick={() => onAction("complete-form", item.id)}>{formComplete ? t("Update information") : t("Submit information")}</button>
+        </PanelCard>
+
+        <PanelCard title="MRI & documents" action={<StatusChip label={item.mriStatus === "Received" ? "MRI received" : "MRI needed"} tone={item.mriStatus === "Received" ? "good" : "info"} />}>
           <div className="upload-zone">
             <strong>{item.mriStatus === "Received" ? t("Your MRI has been received.") : t("Upload the requested MRI")}</strong>
             <p>{item.mriStatus === "Received" ? t("Your specialist team will review the file before any report is shared.") : t("Your clinic will let you know if an MRI upload is needed from you.")}</p>
             <button className="secondary-button" onClick={() => onAction("patient-upload", item.id)}>{item.mriStatus === "Received" ? t("View upload receipt") : t("Choose file")}</button>
           </div>
+          <div className="file-list"><div><span>Referral letter.pdf</span><StatusChip label="Received" tone="good" /></div><div><span>Prior report.pdf</span><StatusChip label="Received" tone="good" /></div></div>
         </PanelCard>
-        <PanelCard title="Documents"><div className="file-list"><div><span>Referral letter.pdf</span><StatusChip label="Received" tone="good" /></div><div><span>Prior report.pdf</span><StatusChip label="Received" tone="good" /></div></div></PanelCard>
-      </div>
-    </>
-  );
 
-  if (activeView === "consent") return (
-    <>
-      <PageHeader eyebrow="Your choices" title="Consent" description="Your care consent and optional research participation are kept separate." />
-      <div className="card-grid two">
         <PanelCard title="Clinical workflow consent" action={<StatusChip label={item.consentStatus} />}><p className="context-copy">{t("Required to continue your requested care workflow.")}</p><button className="primary-button" onClick={() => onAction("consent", item.id)}>{t("Review consent")}</button></PanelCard>
         <PanelCard title="Optional research participation" action={<StatusChip label={item.researchConsentStatus} />}><p className="context-copy">{t("Optional. Uses governed anonymized data where permitted. Research results are not shown in this portal.")}</p><button className="secondary-button" onClick={() => onAction("research-consent", item.id)}>{t("Manage choice")}</button></PanelCard>
-      </div>
-    </>
-  );
+      </>
+    );
+  }
 
   if (activeView === "followup") {
     const scheduled = /^scheduled/i.test(item.followUpStatus);
@@ -209,13 +204,6 @@ export function PatientPanel({ item, activeView, onAction }: Props) {
       <PanelCard title="Your case timeline" subtitle="Milestones your care team has shared">
         {latest ? <p className="timeline-updated">{t("Last updated")} {tv(latest.date)}</p> : null}
         <Timeline events={item.timeline} patientSafe />
-      </PanelCard>
-      <PanelCard title="Helpful actions">
-        <div className="patient-actions">
-          <button onClick={() => onAction("complete-form", item.id)}><strong>{t("Review your information")}</strong><span>{t("Check your forms and requested details")}</span></button>
-          <button onClick={() => onAction("patient-upload", item.id)}><strong>{t("View uploads")}</strong><span>{t("See your MRI and document receipts")}</span></button>
-          <button onClick={() => onAction("support", item.id)}><strong>{t("Contact support")}</strong><span>{t("Get help with a requested step")}</span></button>
-        </div>
       </PanelCard>
       <PanelCard title="Caregiver access" subtitle="Not enabled for this case">
         <div className="status-list">

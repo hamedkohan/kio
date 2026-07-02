@@ -36,6 +36,22 @@ export type RoleSlug = keyof typeof slugToRole;
 const en: Record<string, string> = {};
 
 const fa: Record<string, string> = {
+  // Portal nav / Account / Tasks
+  "Home": "خانه",
+  "Tasks": "کارها",
+  "Account": "حساب کاربری",
+  "Help": "کمک",
+  "Learn": "آموزش",
+  "You": "شما",
+  "Your language, help, and sign out.": "زبان، کمک و خروج شما.",
+  "Choose how the portal is shown": "نحوه‌ی نمایش پرتال را انتخاب کنید",
+  "Kio · patient-safe portal": "کیو · پرتال امن برای بیمار",
+  "Your to-do": "کارهای شما",
+  "Everything your clinic has asked for, in one place. These do not produce a diagnosis.": "همه‌ی چیزهایی که کلینیک خواسته، یک‌جا. این‌ها تشخیص نمی‌دهند.",
+  "You're all caught up — nothing to complete.": "همه‌چیز کامل است — چیزی برای انجام نمانده.",
+  "One item still needs you.": "یک مورد هنوز به شما نیاز دارد.",
+  "{count} items still need you.": "{count} مورد هنوز به شما نیاز دارند.",
+  "MRI & documents": "MRI و مدارک",
   // Patient/Caregiver fa gap-fill
   "A balanced, heart-healthy eating pattern is associated with better brain health.": "یک الگوی غذاییِ متعادل و مناسبِ قلب با سلامت بهترِ مغز مرتبط است.",
   "Brain health & healthy longevity": "سلامت مغز و طول عمر سالم",

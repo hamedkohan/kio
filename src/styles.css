@@ -4637,3 +4637,36 @@ body[data-locale="fa"] .ops-focus-go { transform: scaleX(-1); }
 }
 .reference-section[open] .reference-chevron { transform: rotate(-135deg); }
 .reference-body { padding: 0 1.4rem 1.3rem; }
+
+/* Account tab (mobile portals) — language, help, sign out */
+.account-lang { display: flex; gap: .5rem; }
+.account-lang button {
+  flex: 1;
+  padding: .7rem;
+  color: var(--muted);
+  font-size: .9rem;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: .7rem;
+  cursor: pointer;
+}
+.account-lang button.active {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+}
+.account-logout {
+  width: 100%;
+  margin-top: .4rem;
+  padding: .8rem;
+  color: #8f2f2f;
+  font-size: .9rem;
+  font-weight: 750;
+  background: #fff;
+  border: 1px solid #eecccc;
+  border-radius: .8rem;
+  cursor: pointer;
+}
+.account-logout:hover { background: #fbeaea; }
+.account-meta { margin: .9rem 0 .2rem; text-align: center; color: var(--muted); font-size: .72rem; }
